@@ -1,0 +1,97 @@
+@layer theme, base, components, utilities;
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
+
+/* Tailwind SIN preflight: no resetea estilos de todo el sitio */
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+/* Colores: solo existen dentro de .finance-theme */
+.finance-theme {
+  --background: #f2f8fb;
+  --foreground: #0f1b2a;
+  --card: #ffffff;
+  --primary: #1d4ed8;
+  --primary-foreground: #ffffff;
+  --secondary: #e8eff5;
+  --accent: #dbeafe;
+  --muted-foreground: #5f6f7e;
+  --border: #e1e9f0;
+  --ring: #1d4ed8;
+  --success: #14884b;
+  --success-soft: #d9f5e5;
+  --danger: #c8373c;
+  --danger-soft: #fde4e4;
+  --chart-1: #ff4d00;
+  --chart-2: #2f6fe4;
+  --chart-3: #f5b301;
+  --chart-4: #8b5cf6;
+  --chart-5: #ec4899;
+
+  font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  color: var(--foreground);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+}
+
+/* Reset mínimo, solo dentro del módulo */
+@layer base {
+  .finance-theme,
+  .finance-theme *,
+  .finance-theme *::before,
+  .finance-theme *::after {
+    box-sizing: border-box;
+    border-color: var(--border);
+  }
+  .finance-theme h1,
+  .finance-theme h2,
+  .finance-theme p {
+    margin: 0;
+    font-size: inherit;
+    font-weight: inherit;
+  }
+  .finance-theme ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .finance-theme button,
+  .finance-theme input {
+    margin: 0;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    background: transparent;
+    border: 0 solid;
+  }
+  .finance-theme button {
+    cursor: pointer;
+  }
+}
+
+@layer components {
+  .finance-theme .card-elevated {
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    box-shadow:
+      0 1px 2px rgb(15 27 42 / 0.04),
+      0 4px 12px rgb(15 27 42 / 0.04);
+  }
+}
