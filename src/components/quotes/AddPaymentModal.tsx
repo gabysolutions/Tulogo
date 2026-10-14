@@ -26,7 +26,7 @@ export default function AddPaymentModal({ quote, onClose, onSaved }: Props) {
   const [amount, setAmount] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethod.EFECTIVO);
   const [saving, setSaving] = useState(false);
-  // Oculta el modal mientras se guarda, sin perder la cotización ni lo capturado
+  
   const [hidden, setHidden] = useState(false);
 
   if (!quote || hidden) return null;
@@ -40,7 +40,7 @@ export default function AddPaymentModal({ quote, onClose, onSaved }: Props) {
     if (!canSave) return;
 
     setSaving(true);
-    setHidden(true); // el alert no debe verse encima del modal
+    setHidden(true); 
 
     Swal.fire({
       title: "Registrando abono…",

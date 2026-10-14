@@ -21,10 +21,6 @@ function mapDetail(dto: DesignDetailDTO): DesignDetail {
     description: dto.description,
     category: dto.category,
     teamName: dto.team_name,
-    mainColor: dto.main_color,
-    secondaryColor: dto.secondary_color,
-    frontLogo: dto.front_logo,
-    reverseLogo: dto.reverse_logo,
     designImg: dto.design_img,
     printerType: dto.printer_type,
     observations: dto.observations,
@@ -214,14 +210,10 @@ export const addFileReferenceService = async (
   return data;
 };
 
-// ---- Actualizar detalle de diseño ----
+
 
 export interface UpdateDesignDetailPayload {
   teamName?: string;
-  mainColor?: string;
-  secondaryColor?: string;
-  frontLogo?: string;
-  reverseLogo?: string;
   printerType?: string;
   observations?: string;
 }
@@ -237,7 +229,7 @@ export const updateDesignDetailService = async (
   return data;
 };
 
-// ---- Aceptar / rechazar un detalle ----
+
 
 export const acceptDesignDetailService = async (
   detailId: number

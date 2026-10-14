@@ -19,7 +19,7 @@ interface ClientDTO {
   maternal_last_name: string;
   phone: string;
   email: string;
-  rfc: string;
+  rfc: string | null;
   registration_date: string;
   status: number;
   fiscalName?: string | null;
@@ -35,7 +35,7 @@ id: number;
   maternal_last_name: string;
   phone: string;
   email: string;
-  rfc: string;
+  rfc: string | null;
   fiscalName: string | null;
   fiscalRegime: string | null;
   fiscalZipCode: string | null;
@@ -89,7 +89,7 @@ function mapClient(dto: ClientDTO): Client {
     fullName: buildFullName(name, paternal, maternal),
     phone: dto.phone,
     email: dto.email,
-    rfc: dto.rfc,
+    rfc: dto.rfc ?? "",
     fiscalName: dto.fiscalName ?? null,
     fiscalRegime: dto.fiscalRegime ?? null,
     fiscalZipCode: dto.fiscalZipCode ?? null,
@@ -117,18 +117,11 @@ function mapClientAddress(dto: ClientAddressDTO): ClientAddress {
 
 function buildClientBody(payload: ClientPayload) {
   return {
-    name: payload.name,
-    paternal_last_name: payload.paternal_last_name,
-    maternal_last_name: payload.maternal_last_name,
+    name: payload.name.trim(),
+    paternalLastName: payload.paternal_last_name.trim(),
+    maternalLastName: payload.maternal_last_name?.trim() || ".",
     phone: payload.phone,
     email: payload.email,
-    rfc: payload.rfc,
-    municipality: payload.municipality,
-    neighborhood: payload.neighborhood,
-    street: payload.street,
-    number: payload.number,
-    registration_date: payload.registrationDate,
-    status: payload.status,
   };
 }
 
@@ -170,9 +163,9 @@ export async function createQuickClient(
   payload: QuickClientPayload
 ): Promise<CreateClientResponse> {
   const { data } = await http.post<CreateClientResponse>("/client", {
-    name: payload.name,
-    paternal_last_name: payload.paternal_last_name,
-    maternal_last_name: payload.maternal_last_name,
+    name: payload.name.trim(),
+    paternalLastName: payload.paternal_last_name.trim(),
+    maternalLastName: payload.maternal_last_name?.trim() || ".",
     phone: payload.phone,
   });
   return data;

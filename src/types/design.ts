@@ -53,10 +53,7 @@ export interface DesignDetailDTO {
   description: string;
   category: string;
   team_name: string | null;
-  main_color: string | null;
-  secondary_color: string | null;
-  front_logo: string | null;
-  reverse_logo: string | null;
+
   design_img: string | null;
   printer_type: string | null;
   observations: string | null;
@@ -106,10 +103,6 @@ export interface DesignDetail {
   description: string;
   category: string;
   teamName: string | null;
-  mainColor: string | null;
-  secondaryColor: string | null;
-  frontLogo: string | null;
-  reverseLogo: string | null;
   designImg: string | null;
   printerType: string | null;
   observations: string | null;

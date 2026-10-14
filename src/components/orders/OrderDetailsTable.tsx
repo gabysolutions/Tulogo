@@ -9,15 +9,18 @@ import type {
   AddOrderDetailPayload,
   UpdateOrderDetailPayload,
 } from "../../types/order";
-
+import { GenerateOrderLink } from "./GenerateOrderLink";
 import { useArticles } from "../../hooks/useArticles";
 import { downloadOrderDetailsTemplate, parseOrderDetailsFile } from "../../utils/orderDetailsExcel";
+import { PendingDetailsReview } from "./PendingDetailsReview";
+
 
 interface Props {
   order: Order;
   onAddDetail: (payload: AddOrderDetailPayload) => Promise<unknown>;
   onUpdateDetail: (detailId: number, payload: UpdateOrderDetailPayload) => Promise<unknown>;
   onRemoveDetail: (detailId: number) => Promise<unknown>;
+   onRefresh: () => Promise<unknown> | void;
 }
 
 const SIZES: OrderSize[] = ["XS", "S", "M", "L", "XL"];
@@ -42,11 +45,11 @@ const EMPTY_EDIT_FORM = {
   gender: "" as OrderGender | "",
 };
 
-export default function OrderDetailsTable({ order, onAddDetail, onUpdateDetail, onRemoveDetail }: Props) {
+export default function OrderDetailsTable({ order, onAddDetail, onUpdateDetail, onRemoveDetail,onRefresh }: Props) {
   const { articles } = useArticles();
   const orderArticles = order.articles.map((a) => ({ id: a.articleId, article: a.article }));
 
-  // Artículos del catálogo que pertenecen a esta orden (para el machote y el parser)
+  
   const orderArticleIds = new Set(order.articles.map((a) => a.articleId));
   const templateArticles = articles.filter((a) => orderArticleIds.has(a.id));
 
@@ -94,7 +97,7 @@ export default function OrderDetailsTable({ order, onAddDetail, onUpdateDetail, 
         gender: addForm.gender,
         observation: addForm.observation.trim() || undefined,
       });
-      // Conserva el artículo seleccionado para capturar la siguiente pieza
+      
       setAddForm({ ...EMPTY_ADD_FORM, articleId: addForm.articleId });
       setAddError(null);
       Swal.fire({
@@ -244,6 +247,13 @@ export default function OrderDetailsTable({ order, onAddDetail, onUpdateDetail, 
           <Plus size={16} />
           Agregar manualmente
         </button>
+
+        <GenerateOrderLink 
+        orderId={order.id} 
+        phone={order.phone}
+        
+         />
+
         <button
           onClick={() => fileInputRef.current?.click()}
           disabled={importing}
@@ -308,7 +318,7 @@ export default function OrderDetailsTable({ order, onAddDetail, onUpdateDetail, 
               onChange={(e) => patchAddForm({ gender: e.target.value as OrderGender })}
               className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
             >
-              <option value="">Género*</option>
+              <option value="">Corte*</option>
               {GENDERS.map((g) => (
                 <option key={g.value} value={g.value}>
                   {g.label}
@@ -371,6 +381,8 @@ export default function OrderDetailsTable({ order, onAddDetail, onUpdateDetail, 
           </ul>
         </div>
       )}
+
+      <PendingDetailsReview order={order} onReviewed={onRefresh} />
 
       {/* ALERTA DE PIEZAS FALTANTES */}
       <div

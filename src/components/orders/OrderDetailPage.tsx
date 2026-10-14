@@ -17,8 +17,10 @@ export default function OrderDetailPage() {
   const navigate = useNavigate();
   const orderId = Number(id);
 
-  const { order, movements, loading, error, addDetail, updateDetail, removeDetail, advanceStage } =
-    useOrderDetail(orderId);
+  const { order, movements, loading, error,
+     addDetail, updateDetail, removeDetail, advanceStage,
+      refresh,
+     } =useOrderDetail(orderId);
 
   if (loading) {
     return (
@@ -130,6 +132,7 @@ export default function OrderDetailPage() {
             onAddDetail={addDetail}
             onUpdateDetail={updateDetail}
             onRemoveDetail={removeDetail}
+            onRefresh={refresh}
           />
         </div>
 

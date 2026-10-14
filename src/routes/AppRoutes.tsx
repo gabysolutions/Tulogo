@@ -22,12 +22,18 @@ import Unauthorized from "../pages/errors/Unauthorized";
 import RequirePermission from "./RequirePermission";
 import ProductionDetail from "../components/production/ProductionDetail";
 import HistoryPayments from "../pages/payments/HistoryPayments";
+import PublicLayout from "../layouts/PublicLayout";
+import PublicOrderForm from "../pages/public/PublicOrderForm";
 
 export const AppRoutes = () => {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
+
+          <Route element={<PublicLayout />}>
+            <Route path="/form/:token" element={<PublicOrderForm />} />
+          </Route>
 
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
@@ -85,6 +91,8 @@ export const AppRoutes = () => {
               <Route path="/pagos" element={<HistoryPayments />} />
             </Route>
           </Route>
+
+
         </Route>
       </Routes>
     </BrowserRouter>

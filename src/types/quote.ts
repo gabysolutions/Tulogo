@@ -89,3 +89,11 @@ export interface QuoteUpdatePayload {
   priority: QuotePriority;
   articles: QuoteArticlePayload[];
 }
+
+export interface QuoteAcceptResponse {
+  message: string;
+}
+
+export interface QuoteIvaResponse {
+  message: string;
+}

@@ -45,6 +45,10 @@ export function ClientCreateModal({ open, onClose, onSave }: ClientCreateModalPr
   const [saving, setSaving] = useState(false);
 
   if (!open) return null;
+ 
+  const handleUpperChange = (field: keyof FormState) => (e: ChangeEvent<HTMLInputElement>) => {
+    setForm((prev) => ({ ...prev, [field]: e.target.value.toUpperCase() }));
+  };
 
   const handleChange = (field: keyof FormState) => (e: ChangeEvent<HTMLInputElement>) => {
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
@@ -95,6 +99,7 @@ export function ClientCreateModal({ open, onClose, onSave }: ClientCreateModalPr
       await onSave(
         {
           ...form,
+        
           rfc,
           registrationDate: new Date().toISOString(),
           status: 1,
@@ -102,6 +107,13 @@ export function ClientCreateModal({ open, onClose, onSave }: ClientCreateModalPr
         taxInfo
       );
       handleClose();
+        Swal.fire({
+        icon: "success",
+        title: "¡Listo!",
+        text: "Cliente creado con éxito.",
+        timer: 2000,
+        showConfirmButton: false,
+      });
     } catch {
       Swal.fire({
         icon: "error",
@@ -144,13 +156,13 @@ export function ClientCreateModal({ open, onClose, onSave }: ClientCreateModalPr
               </p>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <Field label="Nombre">
-                  <input className={inputClass} value={form.name} onChange={handleChange("name")} required />
+                  <input className={inputClass} value={form.name} onChange={handleUpperChange("name")} required />
                 </Field>
                 <Field label="Apellido paterno">
-                  <input className={inputClass} value={form.paternal_last_name} onChange={handleChange("paternal_last_name")} required />
+                  <input className={inputClass} value={form.paternal_last_name} onChange={handleUpperChange("paternal_last_name")} required />
                 </Field>
                 <Field label="Apellido materno">
-                  <input className={inputClass} value={form.maternal_last_name} onChange={handleChange("maternal_last_name")} required />
+                  <input className={inputClass} value={form.maternal_last_name} onChange={handleUpperChange("maternal_last_name")} required />
                 </Field>
               </div>
             </section>
@@ -217,20 +229,6 @@ export function ClientCreateModal({ open, onClose, onSave }: ClientCreateModalPr
               </div>
             </section>
 
-            <section className="border-t border-slate-200 pt-5">
-              <p className="mb-3 text-[11px] font-semibold uppercase tracking-widest text-slate-400">
-                Dirección
-              </p>
-              <div className="grid grid-cols-[1fr_auto] gap-4">
-                <Field label="Calle">
-                  <input className={inputClass} value={form.street} onChange={handleChange("street")} />
-                </Field>
-                <Field label="Número">
-                  <input className={`${inputClass} w-24`} value={form.number} onChange={handleChange("number")} />
-                </Field>
-              </div>
-              {/* TODO: cambiar a <select> con catálogo real cuando exista el endpoint de municipios/colonias */}
-            </section>
           </div>
 
           <div className="flex shrink-0 justify-end gap-2 border-t border-slate-200 bg-slate-50/50 px-5 py-4">

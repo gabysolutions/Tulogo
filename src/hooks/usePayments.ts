@@ -3,7 +3,7 @@ import { paymentService } from "../services/payment.service";
 import type { PaymentFilters, PaymentsResponse } from "../types/payment";
 import { toDateParam } from "../utils/format";
 
-// Por defecto: pagos activos, del primer día del mes a hoy
+
 const defaultFilters = (): PaymentFilters => {
   const now = new Date();
   return {
@@ -45,7 +45,7 @@ export function usePayments() {
     };
   }, [debounced, reloadKey]);
 
-  // Cualquier cambio de filtro regresa a la página 1, salvo que el patch traiga page
+  
   const updateFilters = (patch: Partial<PaymentFilters>) =>
     setFilters((prev) => ({ ...prev, page: 1, ...patch }));
 

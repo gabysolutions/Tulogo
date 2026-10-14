@@ -66,10 +66,7 @@ function stepProgress(status: DesignStatus, hasProposal: boolean) {
 
 function isDetailComplete(detail: DesignDetail): boolean {
   return Boolean(
-    detail.teamName?.trim() &&
-      detail.mainColor?.trim() &&
-      detail.secondaryColor?.trim() &&
-      detail.frontLogo?.trim()
+    detail.teamName?.trim() 
   );
 }
 
@@ -167,20 +164,7 @@ function Detail({ label, value }: { label: string; value: string | null }) {
   );
 }
 
-function Swatch({ label, color }: { label: string; color: string | null }) {
-  return (
-    <div className="min-w-0">
-      <dt className="text-[11px] uppercase tracking-wide text-slate-400">{label}</dt>
-      <dd className="mt-0.5 flex items-center gap-2 text-sm">
-        <span
-          className="h-4 w-4 shrink-0 rounded-full border border-slate-200"
-          style={{ backgroundColor: color || "#e2e8f0" }}
-        />
-        <span className="truncate text-slate-700">{color || "—"}</span>
-      </dd>
-    </div>
-  );
-}
+
 
 async function confirmAccept(): Promise<boolean> {
   const result = await Swal.fire({
@@ -481,10 +465,6 @@ export default function DesignDetailPage() {
     try {
       await updateDesignDetailService(activeDetail.id, {
         teamName: updatedDetail.teamName ?? undefined,
-        mainColor: updatedDetail.mainColor ?? undefined,
-        secondaryColor: updatedDetail.secondaryColor ?? undefined,
-        frontLogo: updatedDetail.frontLogo ?? undefined,
-        reverseLogo: updatedDetail.reverseLogo ?? undefined,
         printerType: updatedDetail.printerType ?? undefined,
         observations: updatedDetail.observations ?? undefined,
       });
@@ -684,7 +664,7 @@ export default function DesignDetailPage() {
           </button>
         )}
 
-        {!isDesigner && (
+        
           <>
             <button
               onClick={handleAccept}
@@ -701,10 +681,9 @@ export default function DesignDetailPage() {
               <XCircle size={16} /> Rechazar
             </button>
           </>
-        )}
+       
       </>
-    );
-  };
+    );};
 
   return (
     <main className="mx-auto w-full max-w-4xl px-6 py-8">
@@ -870,10 +849,6 @@ export default function DesignDetailPage() {
             <Detail label="Categoría" value={activeDetail.category} />
             <Detail label="Nombre del equipo" value={activeDetail.teamName} />
             <Detail label="Tipo de impresión" value={activeDetail.printerType} />
-            <Swatch label="Color principal" color={activeDetail.mainColor} />
-            <Swatch label="Color secundario" color={activeDetail.secondaryColor} />
-            <Detail label="Logo principal" value={activeDetail.frontLogo} />
-            <Detail label="Logo trasero" value={activeDetail.reverseLogo} />
             <div className="col-span-2">
               <dt className="text-[11px] uppercase tracking-wide text-slate-400">Observaciones</dt>
               <dd className="text-sm text-slate-800">{activeDetail.observations || "—"}</dd>

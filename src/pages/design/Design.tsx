@@ -43,7 +43,7 @@ const Designs = () => {
     ? myResult
     : adminResult;
 
-  // Diseñador: sus diseños asignados + los disponibles, en un solo listado
+  
   const designs = isDesigner ? [...baseDesigns, ...freeDesigns] : baseDesigns;
 
   

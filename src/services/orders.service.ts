@@ -20,17 +20,19 @@ import type {
   ProductionOrderListItem,
 } from "../types/order";
 
+
 interface MessageResponse {
   message: string;
 }
 
-// ---- Mappers ----
+
 
 function mapListItem(dto: OrderListItemDTO): OrderListItem {
   return {
     id: dto.id,
     designId: dto.designId,
     client: dto.client,
+    phone: dto.phone ?? null,
     designer: dto.designer,
     numberPieces: dto.number_pieces,
     piecesRegistered: dto.pieces_registered,
@@ -67,10 +69,22 @@ function mapImages(imgs: OrderByIdDTO["imgs"]): string[] {
 }
 
 function mapOrder(dto: OrderByIdDTO): Order {
+  const articles = (dto.articles ?? []).map((a) => ({
+    articleId: a.articleId,
+    article: a.article,
+    category: a.category,
+    fabricType: a.fabric_type,
+    designImg: a.design_img,
+    amount: a.amount,
+  }));
+  const articleById = new Map(articles.map((a) => [a.articleId, a]));
+
   return {
     id: dto.id,
     designId: dto.designId,
+    clientId: dto.clientId ?? null,
     client: dto.client,
+    phone: dto.phone ?? null,
     designer: dto.designer,
     numberPieces: dto.number_pieces,
     piecesRegistered: dto.pieces_registered,
@@ -92,12 +106,20 @@ function mapOrder(dto: OrderByIdDTO): Order {
       observation: d.observation,
     })),
     images: mapImages(dto.imgs),
-    articles: (dto.articles ?? []).map((a) => ({
-      articleId: a.articleId,
-      article: a.article,
-      fabricType: a.fabric_type,
-      designImg: a.design_img,
-      amount: a.amount,
+    articles,
+    activity: (dto.activity ?? []).map(mapMovement),
+    submittedDetails: (dto.submittedDetails ?? []).map((d) => ({
+      id: d.id,
+      linkId: d.linkId,
+      orderId: d.orderId,
+      articleId: d.articleId,
+      article: articleById.get(d.articleId)?.article ?? "",
+      category: articleById.get(d.articleId)?.category ?? "",
+      nickname: d.nickname,
+      number: d.number,
+      size: d.size,
+      gender: d.gender,
+      observation: d.observation,
     })),
   };
 }
@@ -112,7 +134,6 @@ function mapMovement(dto: OrderMovementDTO): OrderMovement {
   };
 }
 
-// ---- getOrders ----
 
 export interface GetOrdersResult {
   orders: OrderListItem[];

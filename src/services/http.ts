@@ -3,6 +3,7 @@ import axios from "axios";
 const RAW_API_URL = import.meta.env.VITE_API_URL || "";
 const BASE_API = RAW_API_URL.replace(/\/+$/, "");
 
+
 export const http = axios.create({
   baseURL: BASE_API,
   headers: {
@@ -36,3 +37,11 @@ http.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+
+export const publicHttp = axios.create({
+  baseURL: BASE_API,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});

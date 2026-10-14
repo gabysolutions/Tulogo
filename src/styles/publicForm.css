@@ -1,0 +1,150 @@
+/* Tema del formulario público. Todo cuelga de .public-form para no afectar el ERP. */
+
+.public-form {
+  --background: #f7f5f0;
+  --foreground: #11161d;
+  --card: #ffffff;
+  --primary: #2563eb;
+  --muted: #efece6;
+  --muted-foreground: #5f6670;
+  --border: #e6e3dc;
+  --input: #d8d4cb;
+  --destructive: #dc2626;
+  --warning: #d97706;
+  --warning-foreground: #78350f;
+  --success: #16a34a;
+
+  font-family: "Barlow", system-ui, sans-serif;
+  background: var(--background);
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+}
+
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-primary: var(--primary);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-destructive: var(--destructive);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-success: var(--success);
+}
+
+@theme {
+  --font-display: "Bebas Neue", "Oswald", Impact, sans-serif;
+  --shadow-card: 0 1px 2px rgb(17 22 29 / 0.04), 0 10px 24px -14px rgb(17 22 29 / 0.18);
+}
+
+@layer base {
+  
+  .public-form *,
+  .public-form ::before,
+  .public-form ::after {
+    border-color: var(--border);
+  }
+
+  .public-form :is(button, a, input, select, textarea):focus-visible {
+    outline: 3px solid rgb(37 99 235 / 0.35);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .public-form .btn-primary,
+  .public-form .btn-secondary,
+  .public-form .btn-dashed {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    height: 3rem;
+    padding: 0 1.25rem;
+    border-radius: 1rem;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    transition: filter 0.15s, border-color 0.15s, color 0.15s;
+  }
+
+  .public-form .btn-primary {
+    background: var(--primary);
+    color: #fff;
+  }
+
+  .public-form .btn-secondary {
+    background: var(--foreground);
+    color: #fff;
+  }
+
+  .public-form .btn-primary:hover:not(:disabled),
+  .public-form .btn-secondary:hover:not(:disabled) {
+    filter: brightness(1.12);
+  }
+
+  .public-form .btn-primary:disabled,
+  .public-form .btn-secondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .public-form .btn-dashed {
+    background: transparent;
+    border: 2px dashed #cfcac0;
+    color: var(--muted-foreground);
+  }
+
+  .public-form .btn-dashed:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+
+  .public-form .btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.75rem;
+    color: var(--muted-foreground);
+    cursor: pointer;
+    transition: background-color 0.15s, color 0.15s;
+  }
+
+  .public-form .btn-icon:hover {
+    background: var(--muted);
+    color: var(--foreground);
+  }
+
+  .public-form .field {
+    width: 100%;
+    min-height: 3rem;
+    padding: 0 1rem;
+    border: 1px solid var(--input);
+    border-radius: 0.875rem;
+    background: #fff;
+    color: var(--foreground);
+    font: inherit;
+    font-size: 1rem; /* 16px evita el zoom automático en iPhone */
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .public-form .field::placeholder {
+    color: var(--muted-foreground);
+    opacity: 0.55;
+  }
+
+  .public-form .field:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgb(37 99 235 / 0.18);
+  }
+
+  .public-form .field[aria-invalid="true"] {
+    border-color: var(--destructive);
+  }
+}

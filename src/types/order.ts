@@ -68,6 +68,7 @@ export type OrderGender = "M" | "F";
 export interface OrderArticleDTO {
   articleId: number;
   article: string;
+  category: string;
   fabric_type: string;
   design_img: string;
   amount: number;
@@ -76,6 +77,7 @@ export interface OrderArticleDTO {
 export interface OrderArticle {
   articleId: number;
   article: string;
+  category: string;
   fabricType: string;
   designImg: string;
   amount: number;
@@ -85,6 +87,7 @@ export interface OrderListItemDTO {
   id: number;
   designId: number;
   client: string;
+  phone: string | null;
   designer: string;
   number_pieces: number;
   pieces_registered: number;
@@ -135,7 +138,9 @@ export interface OrderImageDTO {
 export interface OrderByIdDTO {
   id: number;
   designId: number;
+  clientId?: number;
   client: string;
+  phone: string | null;
   designer: string;
   number_pieces: number;
   pieces_registered: number;
@@ -145,9 +150,12 @@ export interface OrderByIdDTO {
   status: number;
   quoteId: number;
   addressId: number | null;
+  activity?: OrderMovementDTO[];
   details: OrderDetailItemDTO[];
-  imgs?: (string | OrderImageDTO)[];   
-  articles?: OrderArticleDTO[]; 
+  imgs?: (string | OrderImageDTO)[];
+  sizeDetail?: unknown[];
+  articles?: OrderArticleDTO[];
+  submittedDetails?: SubmittedOrderDetailDTO[];
 }
 
 export interface OrderMovementDTO {
@@ -164,6 +172,7 @@ export interface OrderListItem {
   id: number;
   designId: number;
   client: string;
+  phone: string | null;
   designer: string;
   numberPieces: number;
   piecesRegistered: number;
@@ -196,7 +205,9 @@ export interface OrderDetailItem {
 export interface Order {
   id: number;
   designId: number;
+  clientId: number | null;
   client: string;
+  phone: string | null;
   designer: string;
   numberPieces: number;
   piecesRegistered: number;
@@ -209,6 +220,8 @@ export interface Order {
   details: OrderDetailItem[];
   images: string[];
   articles: OrderArticle[];
+  activity: OrderMovement[];
+  submittedDetails: SubmittedOrderDetail[];
 }
 
 export interface OrderMovement {
@@ -276,4 +289,21 @@ export interface ProductionOrderListItem extends OrderListItem {
 export interface GetProductionOrdersParams extends GetOrdersParams {
   clientId?: number;
   designerId?: number;
+}
+
+export interface SubmittedOrderDetailDTO {
+  id: number;
+  linkId: number;
+  orderId: number;
+  articleId: number;
+  nickname: string;
+  number: string | null;
+  size: OrderSize;
+  gender: OrderGender;
+  observation: string | null;
+}
+
+export interface SubmittedOrderDetail extends SubmittedOrderDetailDTO {
+  article: string;   
+  category: string;
 }

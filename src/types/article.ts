@@ -18,6 +18,8 @@ export interface Article {
   price: number;
   cost: number;
   status: number;
+  satProductCode: string;
+  satUnitCode: string;
 }
 
 export interface ArticleActionResponse {

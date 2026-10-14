@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./styles/publicForm.css";
 
 body {
   font-family: "Inter", sans-serif;

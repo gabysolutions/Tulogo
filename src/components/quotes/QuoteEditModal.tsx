@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import { X, Plus, Check } from "lucide-react";
 
 import type { ArticleListItem, FabricType } from "../../types/inventory";
-import { QuotePriority, type Quote } from "../../types/quote";
+import { QuotePriority, QuoteStatus, type Quote } from "../../types/quote";
 
 import Field from "./shared/Field";
 import Toggle from "./shared/Toggle";
@@ -12,6 +12,9 @@ import ItemRow from "./shared/ItemRow";
 import { inputCls, selectCls } from "./shared/inputStyles";
 
 const DEFAULT_COSTO_ENVIO = 500;
+
+// Cuando se permita editar cotizaciones aceptadas, cambiar a true
+const ACCEPTED_FULL_EDIT_ENABLED = false;
 
 interface LineItem {
   id: number;
@@ -29,6 +32,7 @@ interface Props {
   quote: Quote | null;
   articles: ArticleListItem[];
   fabricTypes: FabricType[];
+  onAddIva: (quote: Quote) => void;
   onClose: () => void;
   onSave?: (payload: {
     quoteId: number;
@@ -81,12 +85,10 @@ function detailsToItems(
 }
 
 function getInitialShippingCost(quote: Quote): number {
-  // Ahora el backend guarda el envío por separado
   if (quote.shippingAmount > 0) return quote.shippingAmount;
 
   if (!toBool(quote.sending)) return DEFAULT_COSTO_ENVIO;
 
-  // Respaldo para cotizaciones viejas sin shipping_amount: total - subtotal de artículos
   const detailsSubtotal = quote.details.reduce(
     (acc, d) => acc + d.amount * d.unitPrice,
     0
@@ -103,6 +105,7 @@ export default function QuoteEditModal({
   articles,
   fabricTypes,
   onClose,
+  onAddIva,
   onSave,
 }: Props) {
   const [deliveryDate, setDeliveryDate] = useState("");
@@ -220,6 +223,91 @@ export default function QuoteEditModal({
   };
 
   if (!open || !quote) return null;
+
+  // Pendiente: edición completa. Aceptada: solo cuando se habilite.
+  // Aceptada/liquidada hoy: únicamente facturación (agregar IVA).
+  const fullEdit =
+    quote.status === QuoteStatus.PENDIENTE ||
+    (ACCEPTED_FULL_EDIT_ENABLED && quote.status === QuoteStatus.ACEPTADA);
+
+  if (!fullEdit) {
+    const hasIva = toBool(quote.iva);
+    const canAddIva = !hasIva && quote.status !== QuoteStatus.CANCELADA;
+
+    return (
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+        onClick={onClose}
+      >
+        <div
+          className="flex w-full max-w-md flex-col rounded-2xl bg-white shadow-2xl"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+            <div>
+              <h3 className="text-sm font-semibold text-slate-800">
+                Facturación
+              </h3>
+              <p className="mt-0.5 text-xs text-slate-500">
+                Cotización {quote.folio} · {quote.clientName}
+              </p>
+            </div>
+            <button
+              onClick={onClose}
+              className="rounded p-1.5 text-slate-400 hover:bg-slate-100"
+            >
+              <X className="size-4" />
+            </button>
+          </div>
+
+          <div className="space-y-4 px-5 py-5">
+            <div className="space-y-2 rounded-lg bg-slate-50 p-4 text-sm">
+              <div className="flex justify-between">
+                <span className="text-slate-500">Total</span>
+                <span className="font-medium">{fmt(quote.total)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Anticipo</span>
+                <span>{fmt(quote.advance)}</span>
+              </div>
+              <div className="flex justify-between border-t border-slate-200 pt-2 font-medium">
+                <span>Saldo pendiente</span>
+                <span>{fmt(quote.balanceDue)}</span>
+              </div>
+            </div>
+
+            {hasIva ? (
+              <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+                Esta cotización ya incluye IVA.
+              </p>
+            ) : (
+              <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                Esta cotización no incluye IVA. Al agregarlo se recalculan el
+                total y el saldo, y no se puede deshacer.
+              </p>
+            )}
+          </div>
+
+          <div className="flex justify-end gap-2 border-t border-slate-200 bg-slate-50/50 px-5 py-4">
+            <button
+              onClick={onClose}
+              className="rounded-lg border border-slate-200 px-4 py-2 text-sm transition-colors hover:bg-slate-100"
+            >
+              Cerrar
+            </button>
+            {canAddIva && (
+              <button
+                onClick={() => onAddIva(quote)}
+                className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-violet-700"
+              >
+                Agregar IVA
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -372,7 +460,7 @@ export default function QuoteEditModal({
         <div className="flex shrink-0 justify-end gap-2 border-t border-slate-200 bg-slate-50/50 px-5 py-4">
           <button
             onClick={onClose}
-            className="rounded-lg border border-slate-200 px-4 py-2 text-sm hover:bg-slate-100 transition-colors"
+            className="rounded-lg border border-slate-200 px-4 py-2 text-sm transition-colors hover:bg-slate-100"
           >
             Cancelar
           </button>

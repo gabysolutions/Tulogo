@@ -1,4 +1,4 @@
-import { Eye, Pencil, HandCoins, Trash2 } from "lucide-react";
+import { Eye, Pencil, HandCoins, Trash2, CheckCheck  } from "lucide-react";
 
 import { QuoteStatus, type Quote } from "../../types/quote";
 
@@ -10,10 +10,11 @@ interface Props {
   onPreview: (quote: Quote) => void;
   onEdit: (quote: Quote) => void;
   onPay: (quote: Quote) => void;
+   onAccept: (quote: Quote) => void;
   onDelete: (quote: Quote) => void;
 }
 
-export default function QuoteTable({ quotes, onPreview, onEdit, onPay, onDelete }: Props) {
+export default function QuoteTable({ quotes, onPreview, onEdit, onPay, onDelete,onAccept }: Props) {
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
       <div className="overflow-x-auto">
@@ -27,7 +28,7 @@ export default function QuoteTable({ quotes, onPreview, onEdit, onPay, onDelete 
               <th className="px-6 py-4 text-center">Piezas</th>
               <th className="px-6 py-4 text-center">Total</th>
               <th className="px-6 py-4 text-center">Anticipo</th>
-              <th>Prioridad</th>
+              <th className="px-6 py-4 text-center">Prioridad</th>
               <th className="px-6 py-4 text-center">Estado</th>
               <th className="px-6 py-4 text-center">Acciones</th>
             </tr>
@@ -42,6 +43,10 @@ export default function QuoteTable({ quotes, onPreview, onEdit, onPay, onDelete 
 
               const productNames = quote.details.map((d) => d.description);
 
+                
+              const canAccept =
+              quote.status === QuoteStatus.PENDIENTE && quote.advance === 0;
+              
               const canPay =
                 quote.balanceDue > 0 && quote.status !== QuoteStatus.CANCELADA;
 
@@ -126,7 +131,7 @@ export default function QuoteTable({ quotes, onPreview, onEdit, onPay, onDelete 
                         <Eye size={18} />
                       </button>
 
-                      {quote.status === QuoteStatus.PENDIENTE && (
+                      
                         <button
                           onClick={() => onEdit(quote)}
                           title="Editar"
@@ -134,7 +139,17 @@ export default function QuoteTable({ quotes, onPreview, onEdit, onPay, onDelete 
                         >
                           <Pencil size={18} />
                         </button>
-                      )}
+
+                       {canAccept && (
+
+                            <button
+                              onClick={() => onAccept(quote)}
+                              title="Aceptar cotización"
+                              className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 transition hover:bg-green-100 hover:text-green-700"
+                            >
+                              <CheckCheck  size={18} />
+                            </button>
+                          )}
 
                       {canPay && (
                         <button
@@ -163,7 +178,7 @@ export default function QuoteTable({ quotes, onPreview, onEdit, onPay, onDelete 
 
             {quotes.length === 0 && (
               <tr>
-                <td colSpan={9} className="py-12 text-center text-slate-400">
+                <td colSpan={10} className="py-12 text-center text-slate-400">
                   No se encontraron cotizaciones.
                 </td>
               </tr>

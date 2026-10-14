@@ -7,23 +7,36 @@ import { PaymentsSummary } from "../../components/payments/PaymentsSummary";
 import { PaymentsTable } from "../../components/payments/PaymentsTable";
 import { PaymentPagination } from "../../components/payments/PaymentPagination";
 import { PaymentDetailDialog } from "../../components/payments/PaymentDetailDialog";
+import Swal from "sweetalert2";
 
 export default function HistoryPayments() {
   const { filters, updateFilters, resetFilters, data, loading, error, reload } = usePayments();
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [feedback, setFeedback] = useState<{ ok: boolean; text: string } | null>(null);
 
-  const handleCancel = async (id: number) => {
-    if (!window.confirm("¿Cancelar este pago?")) return;
-    try {
-      const res = await paymentService.cancelPayment(id);
-      setFeedback({ ok: true, text: res.message });
-      setSelectedId(null);
-      reload();
-    } catch {
-      setFeedback({ ok: false, text: "No se pudo cancelar el pago." });
-    }
-  };
+const handleCancel = async (id: number) => {
+  const result = await Swal.fire({
+    title: "¿Cancelar este pago?",
+    text: "Esta acción no se puede deshacer.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#6b7280",
+    confirmButtonText: "Sí, cancelar pago",
+    cancelButtonText: "No, volver",
+  });
+
+  if (!result.isConfirmed) return;
+
+  try {
+    const res = await paymentService.cancelPayment(id);
+    setFeedback({ ok: true, text: res.message });
+    setSelectedId(null);
+    reload();
+  } catch {
+    setFeedback({ ok: false, text: "No se pudo cancelar el pago." });
+  }
+};
 
   return (
     <main className="finance-theme min-h-screen bg-background px-4 py-8 sm:px-6 lg:px-10">

@@ -24,6 +24,8 @@ export interface ArticleListItem {
   price: string;
   cost: string;
   status: number;
+  satProductCode: string;
+  satUnitCode: string;
 }
 
 export interface ArticlesPagination {
@@ -44,6 +46,8 @@ export interface ArticlePayload {
   description: string;
   price: number;
   cost: number;
+  satProductCode: string;
+  satUnitCode: string;
 }
 
 interface MessageResponse {

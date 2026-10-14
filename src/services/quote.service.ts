@@ -8,6 +8,8 @@ import type {
   QuoteDetail,
   QuotePriority,
   QuoteStatus,
+  QuoteAcceptResponse,
+    QuoteIvaResponse,
 } from "../types/quote";
 
 
@@ -233,5 +235,15 @@ export async function getQuotePdf(id: number): Promise<Blob> {
 
 export async function deleteQuote(id: number): Promise<MessageResponse> {
   const { data } = await http.delete<MessageResponse>(`/quote/${id}`);
+  return data;
+}
+
+export async function acceptQuote(id: number): Promise<QuoteAcceptResponse> {
+  const { data } = await http.patch<QuoteAcceptResponse>(`/quote/${id}/accept`);
+  return data;
+}
+
+export async function addQuoteIva(id: number): Promise<QuoteIvaResponse> {
+  const { data } = await http.patch<QuoteIvaResponse>(`/quote/${id}/iva`);
   return data;
 }

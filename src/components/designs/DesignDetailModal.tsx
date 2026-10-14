@@ -1,9 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { ImagePlus, Loader2, X } from "lucide-react";
+import { X } from "lucide-react";
 
 import type { DesignDetail } from "../../types/design";
-import { uploadToCloudinary } from "../../lib/cloudinary";
 
 interface Props {
   open: boolean;
@@ -42,96 +41,9 @@ function Field({
   );
 }
 
-function LogoUploadField({
-  label,
-  value,
-  required,
-  error,
-  uploading,
-  onUpload,
-  onRemove,
-}: {
-  label: string;
-  value: string | null;
-  required?: boolean;
-  error?: boolean;
-  uploading: boolean;
-  onUpload: (file: File) => void;
-  onRemove: () => void;
-}) {
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  return (
-    <Field label={label} required={required} error={error}>
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/*"
-        disabled={uploading}
-        className="hidden"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) onUpload(file);
-          e.target.value = "";
-        }}
-      />
-
-      {value ? (
-        <div className="flex items-center gap-3 rounded-lg border border-slate-200 p-2">
-          <img
-            src={value}
-            alt={label}
-            className="h-14 w-14 shrink-0 rounded-md object-cover"
-          />
-          <div className="flex min-w-0 flex-1 flex-col gap-1">
-            <p className="truncate text-xs text-slate-500">{value}</p>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => inputRef.current?.click()}
-                disabled={uploading}
-                className="rounded-md border border-slate-200 px-2 py-1 text-xs font-medium text-slate-600 transition hover:bg-slate-50 disabled:opacity-60"
-              >
-                {uploading ? "Subiendo..." : "Reemplazar"}
-              </button>
-              <button
-                type="button"
-                onClick={onRemove}
-                disabled={uploading}
-                className="rounded-md border border-slate-200 px-2 py-1 text-xs font-medium text-red-600 transition hover:bg-red-50 disabled:opacity-60"
-              >
-                Quitar
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <button
-          type="button"
-          onClick={() => inputRef.current?.click()}
-          disabled={uploading}
-          className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-slate-300 py-4 text-sm text-slate-500 transition hover:bg-slate-50 disabled:opacity-60"
-        >
-          {uploading ? (
-            <>
-              <Loader2 size={16} className="animate-spin" /> Subiendo...
-            </>
-          ) : (
-            <>
-              <ImagePlus size={16} /> Subir imagen
-            </>
-          )}
-        </button>
-      )}
-    </Field>
-  );
-}
-
 export function DesignDetailModal({ open, initialDetail, onClose, onSave }: Props) {
   const [detail, setDetail] = useState<DesignDetail>(initialDetail);
   const [attemptedSave, setAttemptedSave] = useState(false);
-  const [uploadingFront, setUploadingFront] = useState(false);
-  const [uploadingReverse, setUploadingReverse] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -148,7 +60,6 @@ export function DesignDetailModal({ open, initialDetail, onClose, onSave }: Prop
     return () => document.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
-  
   useEffect(() => {
     if (!open) return;
     const original = document.body.style.overflow;
@@ -165,9 +76,6 @@ export function DesignDetailModal({ open, initialDetail, onClose, onSave }: Prop
 
   const requiredMissing = {
     teamName: !detail.teamName?.trim(),
-    mainColor: !detail.mainColor?.trim(),
-    secondaryColor: !detail.secondaryColor?.trim(),
-   
   };
   const hasErrors = Object.values(requiredMissing).some(Boolean);
 
@@ -177,34 +85,9 @@ export function DesignDetailModal({ open, initialDetail, onClose, onSave }: Prop
     onSave(detail);
   };
 
-  const handleUploadFrontLogo = async (file: File) => {
-    setUploadingFront(true);
-    try {
-      const result = await uploadToCloudinary(file);
-      set("frontLogo", result.url);
-    } catch (err) {
-      
-      console.error("Error al subir logo principal", err);
-    } finally {
-      setUploadingFront(false);
-    }
-  };
-
-  const handleUploadReverseLogo = async (file: File) => {
-    setUploadingReverse(true);
-    try {
-      const result = await uploadToCloudinary(file);
-      set("reverseLogo", result.url);
-    } catch (err) {
-      console.error("Error al subir logo trasero", err);
-    } finally {
-      setUploadingReverse(false);
-    }
-  };
-
   return createPortal(
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
@@ -232,7 +115,11 @@ export function DesignDetailModal({ open, initialDetail, onClose, onSave }: Prop
             </Field>
           </div>
 
-          <Field label="Nombre del equipo" required error={attemptedSave && requiredMissing.teamName}>
+          <Field
+            label="Nombre del equipo"
+            required
+            error={attemptedSave && requiredMissing.teamName}
+          >
             <input
               className={inputCls}
               value={detail.teamName ?? ""}
@@ -241,62 +128,7 @@ export function DesignDetailModal({ open, initialDetail, onClose, onSave }: Prop
             />
           </Field>
 
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="Color principal" required error={attemptedSave && requiredMissing.mainColor}>
-              <div className="flex items-center gap-2">
-                <input
-                  type="color"
-                  value={detail.mainColor || "#000000"}
-                  onChange={(e) => set("mainColor", e.target.value)}
-                  className="h-9 w-10 shrink-0 cursor-pointer rounded-md border border-slate-200"
-                />
-                <input
-                  className={inputCls}
-                  value={detail.mainColor ?? ""}
-                  onChange={(e) => set("mainColor", e.target.value)}
-                  placeholder="#000000"
-                />
-              </div>
-            </Field>
-
-            <Field label="Color secundario" required error={attemptedSave && requiredMissing.secondaryColor}>
-              <div className="flex items-center gap-2">
-                <input
-                  type="color"
-                  value={detail.secondaryColor || "#FFFFFF"}
-                  onChange={(e) => set("secondaryColor", e.target.value)}
-                  className="h-9 w-10 shrink-0 cursor-pointer rounded-md border border-slate-200"
-                />
-                <input
-                  className={inputCls}
-                  value={detail.secondaryColor ?? ""}
-                  onChange={(e) => set("secondaryColor", e.target.value)}
-                  placeholder="#FFFFFF"
-                />
-              </div>
-            </Field>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <LogoUploadField
-              label="Logo principal"
-              value={detail.frontLogo}
-             
-              uploading={uploadingFront}
-              onUpload={handleUploadFrontLogo}
-              onRemove={() => set("frontLogo", null)}
-            />
-
-            <LogoUploadField
-              label="Logo trasero"
-              value={detail.reverseLogo}
-              uploading={uploadingReverse}
-              onUpload={handleUploadReverseLogo}
-              onRemove={() => set("reverseLogo", null)}
-            />
-          </div>
-
-          <Field label="Tipo de impresión">
+          <Field label="Tipo de impresora">
             <select
               className={inputCls}
               value={detail.printerType ?? ""}
@@ -327,8 +159,7 @@ export function DesignDetailModal({ open, initialDetail, onClose, onSave }: Prop
           </button>
           <button
             onClick={handleSave}
-            disabled={uploadingFront || uploadingReverse}
-            className="rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-900"
           >
             Guardar
           </button>

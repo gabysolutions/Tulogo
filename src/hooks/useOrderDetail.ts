@@ -20,22 +20,34 @@ export function useOrderDetail(orderId: number) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchAll = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const [orderData, movementsData] = await Promise.all([
-        getOrderByIdService(orderId),
-        getOrderMovementsService(orderId),
-      ]);
-      setOrder(orderData);
-      setMovements(movementsData);
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error("Error al obtener el pedido"));
-    } finally {
-      setLoading(false);
-    }
-  }, [orderId]);
+  const load = useCallback(
+    async (silent: boolean) => {
+      if (!silent) {
+        setLoading(true);
+        setError(null);
+      }
+      try {
+        const [orderData, movementsData] = await Promise.all([
+          getOrderByIdService(orderId),
+          getOrderMovementsService(orderId),
+        ]);
+        setOrder(orderData);
+        setMovements(movementsData);
+      } catch (err) {
+        if (silent) {
+          console.error("Error al refrescar el pedido:", err);
+        } else {
+          setError(err instanceof Error ? err : new Error("Error al obtener el pedido"));
+        }
+      } finally {
+        if (!silent) setLoading(false);
+      }
+    },
+    [orderId]
+  );
+
+  const fetchAll = useCallback(() => load(false), [load]);
+  const refresh = useCallback(() => load(true), [load]);
 
   useEffect(() => {
     fetchAll();
@@ -44,41 +56,41 @@ export function useOrderDetail(orderId: number) {
   const addDetail = useCallback(
     async (payload: AddOrderDetailPayload) => {
       const res = await addOrderDetailService(orderId, payload);
-      await fetchAll();
+      await refresh();
       return res;
     },
-    [orderId, fetchAll]
+    [orderId, refresh]
   );
 
   const updateDetail = useCallback(
     async (detailId: number, payload: UpdateOrderDetailPayload) => {
       const res = await updateOrderDetailService(detailId, payload);
-      await fetchAll();
+      await refresh();
       return res;
     },
-    [fetchAll]
+    [refresh]
   );
 
   const removeDetail = useCallback(
     async (detailId: number) => {
       const res = await deleteOrderDetailService(detailId);
-      await fetchAll();
+      await refresh();
       return res;
     },
-    [fetchAll]
+    [refresh]
   );
 
-const advanceStage = useCallback(async () => {
-  if (!order || order.status >= 10) return;
-  try {
-    await updateOrderStatusService(orderId, { status: order.status }); 
-    await fetchAll();
-  } catch (err: any) {
-    const message = err?.response?.data?.message ?? "No se pudo avanzar la etapa.";
-    console.error("Error al avanzar etapa:", err?.response?.data);
-    throw new Error(message);
-  }
-}, [order, orderId, fetchAll]);
+  const advanceStage = useCallback(async () => {
+    if (!order || order.status >= 10) return;
+    try {
+      await updateOrderStatusService(orderId, { status: order.status });
+      await refresh();
+    } catch (err: any) {
+      const message = err?.response?.data?.message ?? "No se pudo avanzar la etapa.";
+      console.error("Error al avanzar etapa:", err?.response?.data);
+      throw new Error(message);
+    }
+  }, [order, orderId, refresh]);
 
   return {
     order,
@@ -86,6 +98,7 @@ const advanceStage = useCallback(async () => {
     loading,
     error,
     refetch: fetchAll,
+    refresh,
     addDetail,
     updateDetail,
     removeDetail,
