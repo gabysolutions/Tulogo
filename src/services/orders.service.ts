@@ -54,19 +54,24 @@ function mapCards(dto: OrderCardsDTO[]): OrderCards {
   };
 }
 
+const isImage = (src: unknown): src is string => typeof src === "string" && src.length > 0;
+
 function mapProductionListItem(
   dto: ProductionOrderListItemDTO
 ): ProductionOrderListItem {
   return {
     ...mapListItem(dto),
-    images: (dto.detail ?? []).map((d) => d.img),
+    images: (dto.detail ?? []).map((d) => d?.img).filter(isImage),
   };
 }
-
-// Acepta string[] (endpoint normal) o [{ img }] (/in-production)
 function mapImages(imgs: OrderByIdDTO["imgs"]): string[] {
-  return (imgs ?? []).map((i) => (typeof i === "string" ? i : i.img));
+  return (imgs ?? [])
+    .map((i) => (typeof i === "string" ? i : i?.img))
+    .filter(isImage);
 }
+
+
+
 
 function mapOrder(dto: OrderByIdDTO): Order {
   const articles = (dto.articles ?? []).map((a) => ({
@@ -152,8 +157,7 @@ export const getOrdersService = async (
   };
 };
 
-// ---- getProductionOrders (listado en producción) ----
-// Params: status, search, priority, clientId, designerId, page
+
 
 export interface GetProductionOrdersResult {
   orders: ProductionOrderListItem[];
@@ -177,7 +181,7 @@ export const getProductionOrdersService = async (
   };
 };
 
-// ---- detalle de una orden en producción ----
+
 
 export const getProductionOrderByIdService = async (
   id: number
@@ -186,14 +190,13 @@ export const getProductionOrderByIdService = async (
   return mapOrder(data);
 };
 
-// ---- detalle de una orden (endpoint normal) ----
 
 export const getOrderByIdService = async (id: number): Promise<Order> => {
   const { data } = await http.get<OrderByIdDTO>(`/order/${id}`);
   return mapOrder(data);
 };
 
-// ---- getOrderMovements ----
+
 
 export const getOrderMovementsService = async (
   id: number
@@ -202,7 +205,7 @@ export const getOrderMovementsService = async (
   return data.map(mapMovement);
 };
 
-// ---- addOrderDetail ----
+
 
 export const addOrderDetailService = async (
   orderId: number,
@@ -215,7 +218,7 @@ export const addOrderDetailService = async (
   return data;
 };
 
-// ---- updateOrderDetail ----
+
 
 export const updateOrderDetailService = async (
   detailId: number,
@@ -239,7 +242,7 @@ export const deleteOrderDetailService = async (
   return data;
 };
 
-// ---- updateOrderStatus (avanzar etapa) ----
+
 
 export const updateOrderStatusService = async (
   orderId: number,

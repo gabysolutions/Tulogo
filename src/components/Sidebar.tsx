@@ -114,7 +114,7 @@ export function Sidebar() {
           }`}
         >
           <div className="flex h-11 w-11 shrink-0 items-center justify-center transition-transform duration-300 hover:rotate-6 hover:scale-110">
-            <img className="h-12 w-12" src="src\assets\logo1.png" alt="Logo" />
+            <img className="h-12 w-12" src="public\logo1.png" alt="Logo" />
           </div>
 
           <div

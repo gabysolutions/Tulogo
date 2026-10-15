@@ -132,7 +132,7 @@ export interface OrderDetailItemDTO {
 }
 
 export interface OrderImageDTO {
-  img: string;
+  img: string | null;
 }
 
 export interface OrderByIdDTO {
@@ -152,7 +152,7 @@ export interface OrderByIdDTO {
   addressId: number | null;
   activity?: OrderMovementDTO[];
   details: OrderDetailItemDTO[];
-  imgs?: (string | OrderImageDTO)[];
+  imgs?: (string | OrderImageDTO| null)[];
   sizeDetail?: unknown[];
   articles?: OrderArticleDTO[];
   submittedDetails?: SubmittedOrderDetailDTO[];
@@ -265,7 +265,7 @@ export interface GetOrdersParams {
 
 export interface ProductionOrderImageDTO {
   designId: number;
-  img: string;
+  img: string| null;
 }
 
 export interface ProductionOrderListItemDTO extends OrderListItemDTO {
