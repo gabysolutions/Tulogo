@@ -119,13 +119,14 @@ export function ArticleTab() {
               <th className="px-5 py-3">Categoría</th>
               <th className="px-5 py-3">Precio</th>
               <th className="px-5 py-3">Costo</th>
+              <th className="px-5 py-3">Código SAT</th>
               <th className="px-5 py-3 text-right">Acciones</th>
             </tr>
           </thead>
           <tbody>
             {articles.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-5 py-6 text-center text-sm text-gray-400">
+                <td colSpan={6} className="px-5 py-6 text-center text-sm text-gray-400">
                   Sin resultados.
                 </td>
               </tr>
@@ -136,6 +137,16 @@ export function ArticleTab() {
                 <td className="px-5 py-3 text-gray-500">{article.category}</td>
                 <td className="px-5 py-3 text-gray-700">${Number(article.price).toLocaleString("es-MX")}</td>
                 <td className="px-5 py-3 text-gray-500">${Number(article.cost).toLocaleString("es-MX")}</td>
+                <td className="px-5 py-3">
+                {article.satProductCode ? (
+                  <>
+                    <div className="font-mono text-xs text-gray-700">{article.satProductCode}</div>
+                    <div className="text-xs text-gray-400">{article.satUnitCode}</div>
+                  </>
+                ) : (
+                  <span className="rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">Falta</span>
+                )}
+              </td>
                 <td className="px-5 py-3">
                   <div className="flex justify-end gap-1">
                     <button
