@@ -3,6 +3,7 @@ import {  User, Lock, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
+import logo from "../../../public/logo1.png"
 import { useAuth } from "../../context/AuthContext";
 
 export default function Login() {
@@ -67,7 +68,7 @@ export default function Login() {
             {/* Brand */}
             <div className="mb-8 flex flex-col items-center text-center">
               <div className="mb-4 flex  items-center justify-center  text-white  transition-transform duration-300 hover:rotate-6 hover:scale-110">
-                <img className="h-25 w-30" src="public\logo1.png" alt="" />
+                <img className="h-25 w-30" src={logo} alt="" />
               </div>
 
               <h1 className="text-2xl bg-gradient-to-r from-blue-500 via-indigo-500 to-indigo-500 bg-clip-text text-transparent font-bold">

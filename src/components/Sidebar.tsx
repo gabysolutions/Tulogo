@@ -23,7 +23,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { PERMISSIONS, type PermissionKey } from "../constants/permissions";
 import { ROLE_OPTIONS } from "../types/user";
-
+import logo from "../../public/logo1.png";
 interface NavItem {
   label: string;
   to: string;
@@ -114,7 +114,7 @@ export function Sidebar() {
           }`}
         >
           <div className="flex h-11 w-11 shrink-0 items-center justify-center transition-transform duration-300 hover:rotate-6 hover:scale-110">
-            <img className="h-12 w-12" src="public\logo1.png" alt="Logo" />
+            <img className="h-12 w-12" src={logo} alt="Logo" />
           </div>
 
           <div
