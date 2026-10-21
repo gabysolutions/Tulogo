@@ -297,7 +297,6 @@ function ItemRow({
 export default function QuoteFormModal({
   open,
   isAdmin,
-  clients,
   articles,
   fabricTypes,
   onClose,

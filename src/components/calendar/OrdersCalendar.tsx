@@ -163,7 +163,7 @@ export function OrdersCalendar() {
     else setDate((d) => addDays(d, 1));
   };
 
-  const goToday = () => setDate(new Date());
+
 
   // El detalle de la orden y del diseño viven en su propia ruta
   const handleSelect = (order: OrderListItem) => {
