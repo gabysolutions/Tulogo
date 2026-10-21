@@ -42,6 +42,8 @@ export interface PublicOrder {
 export interface ArticleOption {
   id: number;
   name: string;
+  quota: number; 
+  used: number; 
 }
 
 export interface GenderOption {

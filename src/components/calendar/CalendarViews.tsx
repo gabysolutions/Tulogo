@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import {
   addDays,
   eachDayOfInterval,
@@ -6,6 +7,7 @@ import {
   format,
   isSameMonth,
   isToday,
+  parseISO,
   startOfMonth,
   startOfWeek,
 } from "date-fns";
@@ -82,37 +84,54 @@ export function MonthView({ date, byDay, designsByDay, onSelect, onSelectDesign 
     end: endOfWeek(endOfMonth(date), { weekStartsOn: 1 }),
   });
 
+  // Móvil: se toca un día y sus entregas se muestran en un panel debajo del calendario
+  const focusKey = dayKey(date);
+  const [selectedKey, setSelectedKey] = useState<string | null>(null);
+
+  useEffect(() => {
+    setSelectedKey(null);
+  }, [focusKey]);
+
+  const activeKey = selectedKey ?? focusKey;
+  const activeDay = parseISO(activeKey);
+  const activeItems = getEntries(activeKey, byDay, designsByDay);
+
   const open = (e: Entry) => (e.kind === "order" ? onSelect(e.order) : onSelectDesign(e.design));
 
   return (
-    <div className="overflow-x-auto rounded-2xl border border-blue-200 bg-white shadow-soft">
-      <div className="min-w-[640px] sm:min-w-0">
+    <div className="space-y-3">
+      <div className="overflow-hidden rounded-2xl border border-blue-200 bg-white shadow-soft">
         <div className="grid grid-cols-7 border-b border-blue-200 bg-muted/40">
           {WEEKDAYS.map((d) => (
             <div
               key={d}
-              className="px-2 py-2 text-center text-[11px] font-semibold tracking-wide text-muted-foreground uppercase"
+              className="px-0.5 py-2 text-center text-[10px] font-semibold tracking-wide text-muted-foreground uppercase sm:px-2 sm:text-[11px]"
             >
               {d}
             </div>
           ))}
         </div>
+
         <div className="grid grid-cols-7">
           {days.map((day) => {
-            const items = getEntries(dayKey(day), byDay, designsByDay);
+            const key = dayKey(day);
+            const items = getEntries(key, byDay, designsByDay);
             const visible = items.slice(0, MAX_VISIBLE);
             const rest = items.length - visible.length;
             const outside = !isSameMonth(day, date);
+            const selected = key === activeKey;
 
             return (
               <div
                 key={day.toISOString()}
+                onClick={() => setSelectedKey(key)}
                 className={cn(
-                  "min-h-[7rem] border-r border-b border-blue-200 p-1.5 last:border-r-0 sm:min-h-[8.5rem]",
+                  "min-h-[3.5rem] cursor-pointer border-r border-b border-blue-200 p-1 [&:nth-child(7n)]:border-r-0 sm:min-h-[8.5rem] sm:cursor-default sm:p-1.5",
                   outside && "bg-muted/25",
+                  selected && "bg-blue-50 sm:bg-transparent",
                 )}
               >
-                <div className="mb-1 flex items-center justify-between px-0.5">
+                <div className="mb-1 flex flex-col items-center gap-1 px-0.5 sm:flex-row sm:justify-between">
                   <span
                     className={cn(
                       "grid size-6 place-items-center rounded-full text-xs font-medium",
@@ -124,7 +143,9 @@ export function MonthView({ date, byDay, designsByDay, onSelect, onSelectDesign 
                   </span>
                   {items.length > 0 && <DayIndicator entries={items} />}
                 </div>
-                <div className="space-y-1">
+
+                {/* Tarjetas: solo en pantallas >= sm */}
+                <div className="hidden space-y-1 sm:block">
                   {visible.map((e) => (
                     <EntryCard
                       key={entryKey(e)}
@@ -148,6 +169,28 @@ export function MonthView({ date, byDay, designsByDay, onSelect, onSelectDesign 
           })}
         </div>
       </div>
+
+      {/* Panel del día seleccionado: solo en móvil */}
+      <div className="rounded-2xl border border-blue-200 bg-white p-3 shadow-soft sm:hidden">
+        <p className="mb-2 text-xs font-semibold text-foreground capitalize">
+          {format(activeDay, "EEEE d 'de' MMMM", { locale: es })}
+        </p>
+        <div className="space-y-2">
+          {activeItems.length ? (
+            activeItems.map((e) => (
+              <EntryCard
+                key={entryKey(e)}
+                entry={e}
+                onSelect={onSelect}
+                onSelectDesign={onSelectDesign}
+                variant="full"
+              />
+            ))
+          ) : (
+            <p className="text-xs text-muted-foreground">Sin entregas este día.</p>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -157,14 +200,14 @@ export function WeekView({ date, byDay, designsByDay, onSelect, onSelectDesign }
   const days = Array.from({ length: 7 }, (_, i) => addDays(start, i));
 
   return (
-    <div className="grid gap-3 md:grid-cols-7">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
       {days.map((day) => {
         const items = getEntries(dayKey(day), byDay, designsByDay);
         return (
           <div
             key={day.toISOString()}
             className={cn(
-              "min-h-[10rem] rounded-2xl border border-blue-200 bg-white p-2.5 shadow-soft",
+              "min-w-0 rounded-2xl border border-blue-200 bg-white p-2.5 shadow-soft sm:min-h-[10rem]",
               isToday(day) && "border-primary/40 ring-1 ring-primary/20",
             )}
           >
@@ -212,17 +255,17 @@ export function DayView({ date, byDay, designsByDay, onSelect, onSelectDesign }:
   const pieces = items.reduce((s, e) => (e.kind === "order" ? s + e.order.numberPieces : s), 0);
 
   return (
-    <div className="rounded-2xl border border-blue-200 bg-white p-5 shadow-soft">
+    <div className="rounded-2xl border border-blue-200 bg-white p-4 shadow-soft sm:p-5">
       <header className="mb-4 flex flex-wrap items-end justify-between gap-2 border-b border-gray-200 pb-4">
         <div>
           <p className="text-[11px] tracking-wide text-muted-foreground uppercase">
             {format(date, "EEEE", { locale: es })}
           </p>
-          <h2 className="text-2xl font-semibold text-foreground">
+          <h2 className="text-xl font-semibold text-foreground sm:text-2xl">
             {format(date, "d 'de' MMMM yyyy", { locale: es })}
           </h2>
         </div>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-xs text-muted-foreground sm:text-sm">
           {orders.length} entregas · {designsCount} diseños · {pieces} piezas
         </p>
       </header>

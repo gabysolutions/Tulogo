@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Search, UserPlus, Check } from "lucide-react";
 
 import type { Client } from "../../types/client";
+import { getClients } from "../../services/client.service";
 
 const inputCls =
   "w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-colors";
@@ -14,7 +15,6 @@ export interface NewClientData {
 }
 
 interface Props {
-  clients: Client[];
   selectedClient: Client | null;
   onSelectClient: (client: Client | null) => void;
   isNewClient: boolean;
@@ -24,14 +24,12 @@ interface Props {
 }
 
 function clientLabel(client: Client): string {
-  return (
-    
-    `${client.name} ${client.paternal_last_name} ${client.maternal_last_name}${client.phone ? ` (${client.phone})` : ""}`
-  );
+  return `${client.name} ${client.paternal_last_name} ${client.maternal_last_name}${
+    client.phone ? ` (${client.phone})` : ""
+  }`;
 }
 
 export default function ClientSearchField({
-  clients,
   selectedClient,
   onSelectClient,
   isNewClient,
@@ -41,6 +39,8 @@ export default function ClientSearchField({
 }: Props) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
+  const [results, setResults] = useState<Client[]>([]);
+  const [searching, setSearching] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -58,14 +58,36 @@ export default function ClientSearchField({
       document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
- const results =
-  query.trim().length === 0
-    ? []
-    : clients.filter((c) => {
-        const fullName = `${c.name} ${c.paternal_last_name} ${c.maternal_last_name}`;
-        const haystack = `${fullName} ${c.phone ?? ""}`.toLowerCase();
-        return haystack.includes(query.toLowerCase());
-      });
+ 
+  useEffect(() => {
+    const term = query.trim();
+
+    if (!term || selectedClient) {
+      setResults([]);
+      setSearching(false);
+      return;
+    }
+
+    let cancelled = false;
+    setSearching(true);
+
+    const timer = setTimeout(async () => {
+      try {
+        const res = await getClients({ search: term, page: 1 });
+        if (!cancelled) setResults(res.clients);
+      } catch (err) {
+        console.error("Error buscando clientes:", err);
+        if (!cancelled) setResults([]);
+      } finally {
+        if (!cancelled) setSearching(false);
+      }
+    }, 300);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [query, selectedClient]);
 
   const handleSelect = (client: Client) => {
     onSelectClient(client);
@@ -146,7 +168,7 @@ export default function ClientSearchField({
 
           <input
             className={`${inputCls} pl-9`}
-            placeholder="Buscar cliente por nombre o teléfono..."
+            placeholder="Buscar cliente por nombre..."
             value={query}
             onChange={(e) => {
               setQuery(e.target.value.toUpperCase());
@@ -161,7 +183,11 @@ export default function ClientSearchField({
 
           {open && query.trim().length > 0 && (
             <div className="absolute z-10 mt-1 w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg">
-              {results.length > 0 ? (
+              {searching ? (
+                <div className="px-3 py-3 text-sm text-slate-500">
+                  Buscando...
+                </div>
+              ) : results.length > 0 ? (
                 <ul className="max-h-48 overflow-y-auto">
                   {results.map((c) => (
                     <li key={c.id}>

@@ -228,13 +228,7 @@ export function OrdersCalendar() {
           </div>
 
           <div className="flex items-center gap-1 rounded-full border border-gray-300 px-3 py-3">
-            <button
-              type="button"
-              onClick={goToday}
-              className="rounded-full px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-blue-200 hover:text-black"
-            >
-              Hoy
-            </button>
+            
             <span className="h-4 w-px bg-border" />
             {(Object.keys(VIEW_LABEL) as ViewMode[]).map((v) => (
               <button

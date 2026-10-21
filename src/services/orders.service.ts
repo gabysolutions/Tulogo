@@ -40,6 +40,10 @@ function mapListItem(dto: OrderListItemDTO): OrderListItem {
     priority: dto.priority,
     status: dto.status,
     quoteId: dto.quoteId,
+    clientId: dto.clientId ?? null,
+    sending: Number(dto.sending ?? 0),
+    address: dto.address ?? null,
+    
   };
 }
 
@@ -98,7 +102,8 @@ function mapOrder(dto: OrderByIdDTO): Order {
     priority: dto.priority,
     status: dto.status,
     quoteId: dto.quoteId,
-    addressId: dto.addressId,
+    addressId: dto.address ?? null,
+     sending: Number(dto.sending ?? 0),
     details: (dto.details ?? []).map((d) => ({
       id: d.id,
       articleId: d.articleId,

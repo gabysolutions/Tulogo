@@ -3,17 +3,15 @@ import { ArrowUpRight, Search } from "lucide-react";
 import type { Payment } from "../../types/finance";
 import { money, shortDate } from "../../utils/format";
 
-
-
 const cn = (...classes: (string | false | null | undefined)[]) =>
   classes.filter(Boolean).join(" ");
-
 
 function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
       className={cn(
-        "h-9 rounded-md border bg-card text-sm outline-none",
+        // text-base en móvil evita el zoom automático de iOS al enfocar el input
+        "h-10 rounded-md border bg-card text-base outline-none sm:h-9 sm:text-sm",
         "placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50",
         className,
       )}
@@ -21,8 +19,6 @@ function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElement>) {
     />
   );
 }
-
-
 
 const toISO = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -34,15 +30,12 @@ const weekStartISO = () => {
   return toISO(d);
 };
 
-
-
-type Filter = "hoy" | "semana" | "mes" ;
+type Filter = "hoy" | "semana" | "mes";
 
 const FILTERS: { value: Filter; label: string }[] = [
   { value: "hoy", label: "Hoy" },
   { value: "semana", label: "Esta semana" },
   { value: "mes", label: "Este mes" },
- 
 ];
 
 interface Props {
@@ -53,8 +46,6 @@ interface Props {
 export function PaymentsList({ payments, total }: Props) {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("mes");
-  
-
 
   const inPeriod = (date: string) => {
     if (filter === "hoy") return date === toISO(new Date());
@@ -78,13 +69,13 @@ export function PaymentsList({ payments, total }: Props) {
   const shownTotal = filtered ? visible.reduce((sum, p) => sum + p.amount, 0) : total;
 
   return (
-    <div className="card-elevated p-5">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-semibold">Pagos y anticipos recibidos</h2>
+    <div className="card-elevated p-4 sm:p-5">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
+        <div className="min-w-0">
+          <h2 className="text-base font-semibold sm:text-lg">Pagos y anticipos recibidos</h2>
           <p className="text-sm text-muted-foreground">Historial del dinero recibido por ventas.</p>
         </div>
-        <span className="rounded-full bg-success-soft px-3 py-1 text-sm font-semibold text-success">
+        <span className="w-fit shrink-0 rounded-full bg-success-soft px-3 py-1 text-sm font-semibold text-success">
           {money(shownTotal)}
         </span>
       </div>
@@ -99,7 +90,7 @@ export function PaymentsList({ payments, total }: Props) {
               aria-selected={filter === f.value}
               onClick={() => setFilter(f.value)}
               className={cn(
-                "flex-1 rounded-lg px-3 py-1.5 text-sm transition-colors",
+                "flex-1 whitespace-nowrap rounded-lg px-2 py-2 text-xs transition-colors sm:px-3 sm:py-1.5 sm:text-sm",
                 filter === f.value
                   ? "bg-card font-medium shadow-sm"
                   : "text-muted-foreground hover:text-foreground",
@@ -109,8 +100,6 @@ export function PaymentsList({ payments, total }: Props) {
             </button>
           ))}
         </div>
-
-       
 
         <div className="relative">
           <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -133,7 +122,7 @@ export function PaymentsList({ payments, total }: Props) {
                 {p.payment_method} · {p.register_user}
               </p>
             </div>
-            <span className="flex shrink-0 items-center gap-1 font-semibold text-success">
+            <span className="flex shrink-0 items-center gap-1 text-sm font-semibold text-success sm:text-base">
               <ArrowUpRight className="size-4" />+{money(p.amount)}
             </span>
           </li>

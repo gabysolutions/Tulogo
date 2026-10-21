@@ -2,13 +2,13 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 
-import type { DesignDetail } from "../../types/design";
+import type { DesignDetailById } from "../../types/design";
 
 interface Props {
   open: boolean;
-  initialDetail: DesignDetail;
+  initialDetail: DesignDetailById;
   onClose: () => void;
-  onSave: (detail: DesignDetail) => void;
+  onSave: (detail: DesignDetailById) => void;
 }
 
 const inputCls =
@@ -42,7 +42,7 @@ function Field({
 }
 
 export function DesignDetailModal({ open, initialDetail, onClose, onSave }: Props) {
-  const [detail, setDetail] = useState<DesignDetail>(initialDetail);
+  const [detail, setDetail] = useState<DesignDetailById>(initialDetail);
   const [attemptedSave, setAttemptedSave] = useState(false);
 
   useEffect(() => {
@@ -71,7 +71,7 @@ export function DesignDetailModal({ open, initialDetail, onClose, onSave }: Prop
 
   if (!open) return null;
 
-  const set = <K extends keyof DesignDetail>(key: K, value: DesignDetail[K]) =>
+  const set = <K extends keyof DesignDetailById>(key: K, value: DesignDetailById[K]) =>
     setDetail((d) => ({ ...d, [key]: value }));
 
   const requiredMissing = {

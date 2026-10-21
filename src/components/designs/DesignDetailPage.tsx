@@ -21,7 +21,11 @@ import {
 
 import { useAuth } from "../../context/AuthContext";
 import { useDesign } from "../../hooks/useDesign";
-import { DesignStatus, type DesignDetail, type DesignComment } from "../../types/design";
+import {
+  DesignStatus,
+  type DesignDetailById,
+  type DesignComment,
+} from "../../types/design";
 import {
   addFileReferenceService,
   assignDesignerService,
@@ -41,6 +45,7 @@ import { ImageCarousel } from "../../components/designs/ImageCarousel";
 import { Lightbox } from "../../components/designs/Lightbox";
 import { StatusBadge } from "../../components/designs/StatusBadge";
 import { DesignDetailModal } from "../../components/designs/DesignDetailModal";
+import { SendDesignToClientButton } from "../../components/designs/Senddesigntoclientbutton";
 
 const toast = Swal.mixin({
   toast: true,
@@ -64,10 +69,8 @@ function stepProgress(status: DesignStatus, hasProposal: boolean) {
   return 0;
 }
 
-function isDetailComplete(detail: DesignDetail): boolean {
-  return Boolean(
-    detail.teamName?.trim() 
-  );
+function isDetailComplete(detail: DesignDetailById): boolean {
+  return Boolean(detail.teamName?.trim());
 }
 
 function Track({ status, hasProposal }: { status: DesignStatus; hasProposal: boolean }) {
@@ -163,8 +166,6 @@ function Detail({ label, value }: { label: string; value: string | null }) {
     </div>
   );
 }
-
-
 
 async function confirmAccept(): Promise<boolean> {
   const result = await Swal.fire({
@@ -460,7 +461,7 @@ export default function DesignDetailPage() {
     }
   };
 
-  const handleSaveDetail = async (updatedDetail: DesignDetail) => {
+  const handleSaveDetail = async (updatedDetail: DesignDetailById) => {
     setBusy(true);
     try {
       await updateDesignDetailService(activeDetail.id, {
@@ -664,26 +665,23 @@ export default function DesignDetailPage() {
           </button>
         )}
 
-        
-          <>
-            <button
-              onClick={handleAccept}
-              disabled={busy}
-              className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:opacity-60"
-            >
-              <CheckCircle2 size={16} /> Aceptar
-            </button>
-            <button
-              onClick={handleReject}
-              disabled={busy}
-              className="flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-red-700 disabled:opacity-60"
-            >
-              <XCircle size={16} /> Rechazar
-            </button>
-          </>
-       
+        <button
+          onClick={handleAccept}
+          disabled={busy}
+          className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:opacity-60"
+        >
+          <CheckCircle2 size={16} /> Aceptar
+        </button>
+        <button
+          onClick={handleReject}
+          disabled={busy}
+          className="flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-red-700 disabled:opacity-60"
+        >
+          <XCircle size={16} /> Rechazar
+        </button>
       </>
-    );};
+    );
+  };
 
   return (
     <main className="mx-auto w-full max-w-4xl px-6 py-8">
@@ -860,6 +858,11 @@ export default function DesignDetailPage() {
       <CommentsSection comments={activeDetail.comments ?? []} />
 
       <footer className="mt-8 flex flex-wrap gap-2 border-t border-slate-200 pt-6">
+        <SendDesignToClientButton
+          clientName={design.clientName}
+          clientPhone={design.clientPhone}
+          designUrl={activeDetail.designImg}
+        />
         {designLevelActions()}
         {detailLevelActions()}
       </footer>

@@ -4,83 +4,44 @@ interface Props {
   timeline: ProductionTimelineItem[];
 }
 
-export default function ProductionTimeline({
-  timeline,
-}: Props) {
+export default function ProductionTimeline({ timeline }: Props) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-
-      <h3 className="text-md font-semibold">
-        Timeline de Producción
-      </h3>
+    <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
+      <h3 className="text-base font-semibold">Timeline de Producción</h3>
 
       <p className="mb-5 text-xs text-muted-foreground">
         Pedidos por etapa actualmente
       </p>
 
-      <div className="relative">
+      <ol className="flex flex-col md:flex-row md:items-start md:justify-between">
+        {timeline.map((item, index) => {
+          const isLast = index === timeline.length - 1;
 
-        <div className="absolute left-0 right-0 top-4 h-px bg-border" />
-
-        <div className="flex items-start justify-between">
-
-          {timeline.map((item,index) => (
-
-            <div
+          return (
+            <li
               key={item.id}
-              className="relative flex flex-1 flex-col items-center"
+              className="relative flex items-center gap-4 pb-6 last:pb-0 md:flex-1 md:flex-col md:gap-0 md:pb-0"
             >
-              {index < timeline.length - 1 && (
-                    <div
-                    className="
-                        absolute
-                        top-5
-                        left-1/2
-                        w-full
-                        h-[2px]
-                        bg-gray-400
-                        -z-0
-                    "
-                    />
-                )}
+              {/* Conector: vertical en móvil, horizontal en md+ */}
+              {!isLast && (
+                <span
+                  aria-hidden
+                  className="absolute left-5 top-10 h-full w-0.5 -translate-x-1/2 bg-gray-300
+                             md:left-1/2 md:top-5 md:h-0.5 md:w-full md:translate-x-0 md:-translate-y-1/2"
+                />
+              )}
 
-
-
-
-
-              <div
-                className="
-                  z-10
-                  flex
-                  h-10
-                  w-10
-                  items-center
-                  justify-center
-                  rounded-full
-                  border-3
-                  border-primary
-                  bg-white
-                  text-xs
-                  font-bold
-                  text-primary
-                  text-blue-600
-                "
-              >
+              <div className="z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-[3px] border-blue-600 bg-white text-xs font-bold text-blue-600">
                 {item.count}
               </div>
 
-              <p className="mt-2 text-gray-600 text-center text-[14px] text-muted-foreground">
+              <p className="text-left text-sm text-gray-600 md:mt-2 md:text-center">
                 {item.stage}
               </p>
-
-            </div>
-
-          ))}
-
-        </div>
-
-      </div>
-
+            </li>
+          );
+        })}
+      </ol>
     </div>
   );
 }

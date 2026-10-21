@@ -61,7 +61,7 @@ export const PRIORITY_META: Record<
   },
 };
 
-export type OrderSize = "XS" | "S" | "M" | "L" | "XL";
+export type OrderSize = "2" | "3" | "4" | "6" | "8" | "10" | "12" | "14" | "16" | "XCH" | "CH" | "M"| "G"| "XL"| "2XL"| "3XL"| "4XL"| "5XL"| "6XL";
 export type OrderGender = "M" | "F";
 
 
@@ -89,12 +89,16 @@ export interface OrderListItemDTO {
   client: string;
   phone: string | null;
   designer: string;
+  
   number_pieces: number;
   pieces_registered: number;
   delivery_date: string;
   priority: Priority;
   status: number;
   quoteId: number;
+ clientId: number | null;
+  sending: number;
+  address: number | null;
 }
 
 export interface OrderCardsDTO {
@@ -149,13 +153,14 @@ export interface OrderByIdDTO {
   priority: Priority;
   status: number;
   quoteId: number;
-  addressId: number | null;
+  address: number | null;
   activity?: OrderMovementDTO[];
   details: OrderDetailItemDTO[];
   imgs?: (string | OrderImageDTO| null)[];
   sizeDetail?: unknown[];
   articles?: OrderArticleDTO[];
   submittedDetails?: SubmittedOrderDetailDTO[];
+  sending:number;
 }
 
 export interface OrderMovementDTO {
@@ -180,6 +185,9 @@ export interface OrderListItem {
   priority: Priority;
   status: number;
   quoteId: number;
+  clientId: number | null;
+  sending: number;
+  address: number | null;
 }
 
 export interface OrderCards {
@@ -222,6 +230,7 @@ export interface Order {
   articles: OrderArticle[];
   activity: OrderMovement[];
   submittedDetails: SubmittedOrderDetail[];
+  sending:number;
 }
 
 export interface OrderMovement {

@@ -8,6 +8,7 @@ interface Props {
   onAdvance: (order: OrderListItem) => void;
 }
 
+
 export default function OrdersTable({ orders, onOpen, onAdvance }: Props) {
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
@@ -30,6 +31,9 @@ export default function OrdersTable({ orders, onOpen, onAdvance }: Props) {
               <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
                 Entrega
               </th>
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                Dirección de envío
+                </th>
               <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
                 Producción
               </th>

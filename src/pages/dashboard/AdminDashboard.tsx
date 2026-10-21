@@ -26,18 +26,20 @@ export default function Dashboard() {
   }
 
   return (
-    <main className="mx-auto w-full px-6 py-8">
+    <main className="mx-auto w-full px-4 py-6 sm:px-6 sm:py-8">
       <div className="flex flex-col gap-4 bg-gray-50">
         <DashboardHeader />
 
         <DashboardStats stats={data.stats} />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div className="lg:col-span-2">
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+          <div className="min-w-0 xl:col-span-2">
             <ProductionTimeline timeline={data.productionTimeline} />
           </div>
 
-          <RecentActivity activity={data.recentActivity} />
+          <div className="min-w-0">
+            <RecentActivity activity={data.recentActivity} />
+          </div>
         </div>
       </div>
     </main>

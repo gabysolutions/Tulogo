@@ -1,20 +1,32 @@
 import { useEffect, useRef, useState } from "react";
-import { X, MessageCircle,Download  } from "lucide-react";
-
+import { X, MessageCircle, Download } from "lucide-react";
+import Swal from "sweetalert2";
 import type { Quote } from "../../types/quote";
-import { getQuotePdf } from "../../services/quote.service";
+import { getQuotePdf,createQuoteShareLink } from "../../services/quote.service";
+import { EMOJI, openWhatsApp } from "../../lib/whatsapp";
+import { SendPaymentInfoButton } from "../quotes/Sendpaymentinfobutton";
 
 interface Props {
   quote: Quote | null;
   onClose: () => void;
 }
 
+const buildFileName = (q: Quote) => {
+  const cleanName = q.clientName
+    .replace(/[\\/:*?"<>|]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/[. ]+$/, "");
+  return `${q.folio} - ${cleanName}.pdf`;
+};
+
 export default function QuotePreviewModal({ quote, onClose }: Props) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
+  const [error, setError] = useState<string | null>(null); 
+  const [sharing, setSharing] = useState(false);
+  
   useEffect(() => {
     if (!quote) {
       setPdfUrl(null);
@@ -42,39 +54,47 @@ export default function QuotePreviewModal({ quote, onClose }: Props) {
     };
   }, [quote]);
 
- 
-  const handleWhatsApp = () => {
-    if (!quote) return;
+const handleWhatsAppQuote = async () => {
+  if (!quote || sharing) return;
 
-    const phone = quote.phone?.replace(/\D/g, "");
-    if (!phone) return;
+  setSharing(true);
+  try {
+    const url = await createQuoteShareLink(quote.id);
 
-    const message = `Hola ${quote.clientName}, te comparto tu cotización ${quote.folio}.`;
-    window.open(
-      `https://wa.me/52${phone}?text=${encodeURIComponent(message)}`,
-      "_blank"
-    );
+    const message = [
+      `Hola ${quote.clientName} ${EMOJI.wave}`,
+      ``,
+      `Te comparto tu cotización *${quote.folio}* ${EMOJI.page}`,
+      url,
+      ``,
+      `Este enlace estará disponible por 48 horas.`,
+      ``,
+      `¡Gracias por tu preferencia! ${EMOJI.thanks}`,
+    ].join("\n");
+
+    openWhatsApp(quote.phone, message);
+  } catch {
+    Swal.fire({
+      icon: "error",
+      title: "No se pudo generar el enlace",
+      text: "Intenta de nuevo en unos segundos.",
+      confirmButtonColor: "#1e293b",
+    });
+  } finally {
+    setSharing(false);
+  }
+};
+
+  const handleDownload = () => {
+    if (!quote || !pdfUrl) return;
+
+    const a = document.createElement("a");
+    a.href = pdfUrl;
+    a.download = buildFileName(quote);
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
   };
-
-const buildFileName = (q: Quote) => {
-  const cleanName = q.clientName
-    .replace(/[\\/:*?"<>|]/g, "") 
-    .replace(/\s+/g, " ")         
-    .trim()
-    .replace(/[. ]+$/, "");       
-  return `${q.folio} - ${cleanName}.pdf`;
-};
-
-const handleDownload = () => {
-  if (!quote || !pdfUrl) return;
-
-  const a = document.createElement("a");
-  a.href = pdfUrl;
-  a.download = buildFileName(quote);
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-};
 
   if (!quote) return null;
 
@@ -89,36 +109,32 @@ const handleDownload = () => {
       >
         <div className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-slate-50 px-6 py-4">
           <div>
-            <h2 className="text-xl font-bold text-slate-800">
-              Vista previa de cotización
-            </h2>
+            <h2 className="text-xl font-bold text-slate-800">Vista previa de cotización</h2>
             <p className="text-sm text-slate-500">{quote.folio}</p>
           </div>
 
           <div className="flex gap-2">
-            <button
-              onClick={handleWhatsApp}
-              disabled={!quote.phone}
-              className="rounded-lg p-2 text-green-600 hover:bg-green-50 disabled:opacity-40 disabled:hover:bg-transparent"
-              title="Enviar por WhatsApp"
-            >
-              <MessageCircle size={20} />
-            </button>
-            
-            <button
-                onClick={handleDownload}
-                disabled={!pdfUrl || loading}
-                className="rounded-lg p-2 text-slate-600 hover:bg-slate-200 disabled:opacity-40 disabled:hover:bg-transparent"
-                title="Descargar PDF"
-              >
-                <Download size={20} />
-              </button>
-                        
+           <button
+            onClick={handleWhatsAppQuote}
+            disabled={!quote.phone || sharing}
+            className="rounded-lg p-2 text-green-600 hover:bg-green-50 disabled:opacity-40 disabled:hover:bg-transparent"
+            title="Enviar cotización por WhatsApp"
+          >
+            <MessageCircle size={20} />
+          </button>
+
+            <SendPaymentInfoButton phone={quote.phone} folio={quote.folio} />
 
             <button
-              onClick={onClose}
-              className="rounded-lg p-2 hover:bg-slate-200"
+              onClick={handleDownload}
+              disabled={!pdfUrl || loading}
+              className="rounded-lg p-2 text-slate-600 hover:bg-slate-200 disabled:opacity-40 disabled:hover:bg-transparent"
+              title="Descargar PDF"
             >
+              <Download size={20} />
+            </button>
+
+            <button onClick={onClose} className="rounded-lg p-2 hover:bg-slate-200">
               <X size={20} />
             </button>
           </div>

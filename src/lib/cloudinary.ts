@@ -8,15 +8,6 @@ export interface CloudinaryUploadResult {
   height: number;
 }
 
-/**
- * Sube un archivo directo al navegador -> Cloudinary usando un
- * upload preset "unsigned" (Settings > Upload > Upload presets > Add upload preset,
- * Signing Mode = Unsigned, en tu dashboard de Cloudinary).
- *
- * No pasa por tu backend. Cuando tengas tu backend, después de llamar esto
- * mandas la URL resultante a tu API para persistir el registro del archivo
- * (ver el TODO en DesignCard.tsx).
- */
 export async function uploadToCloudinary(file: File): Promise<CloudinaryUploadResult> {
   if (!CLOUD_NAME || !UPLOAD_PRESET) {
     throw new Error(
@@ -50,7 +41,7 @@ export async function uploadToCloudinary(file: File): Promise<CloudinaryUploadRe
   };
 }
 
-/** Sube varios archivos en paralelo y devuelve sus resultados en el mismo orden. */
+
 export async function uploadManyToCloudinary(
   files: File[],
 ): Promise<CloudinaryUploadResult[]> {

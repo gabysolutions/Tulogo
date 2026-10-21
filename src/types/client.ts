@@ -81,6 +81,10 @@ export interface ClientAddressPayload {
   number: string;
 }
 
+export interface UpdateOrderDeliveryAddressPayload {
+  addressId: number;
+}
+
 export interface ClientTaxInformationPayload {
   rfc: string;
   fiscalName: string;

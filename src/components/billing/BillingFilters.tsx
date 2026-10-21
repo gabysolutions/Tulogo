@@ -22,8 +22,8 @@ export function BillingFilters({ search, onSearchChange, status, onStatusChange 
         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
         <input
           value={search}
-          onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="Buscar por folio o cliente…"
+          onChange={(e) => onSearchChange(e.target.value.toUpperCase())}
+          placeholder="Buscar por  cliente…"
           className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-9 pr-9 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100"
         />
         {search && (

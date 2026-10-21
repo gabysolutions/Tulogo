@@ -1,19 +1,29 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, ArrowRight, Lock, X } from "lucide-react";
 import { STAGES, getStage } from "../../types/order";
 import type { ProductionOrderListItem } from "../../types/order";
+import { updateOrderDeliveryAddress } from "../../services/client-address.service";
+import DeliveryAddressPicker from "../production/DeliveryAddressPicker"; 
 
 interface Props {
-  order: Pick<ProductionOrderListItem, "id" | "status"> | null;
+  order: Pick<ProductionOrderListItem, "id" | "status" | "clientId" | "sending" | "address"> | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  // El status que se manda al API sale de la orden seleccionada (el backend avanza la etapa).
-  // Devuelve true si el cambio se guardó (el dialog se cierra solo en ese caso)
+  
   onConfirm: () => Promise<boolean>;
 }
 
 export function UpdateStatusDialog({ order, open, onOpenChange, onConfirm }: Props) {
   const [submitting, setSubmitting] = useState(false);
+  const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (open) {
+      setSelectedAddressId(order?.address ?? null);
+      setError(null);
+    }
+  }, [open, order?.id, order?.address]);
 
   if (!open || !order) return null;
 
@@ -22,12 +32,24 @@ export function UpdateStatusDialog({ order, open, onOpenChange, onConfirm }: Pro
   const nextId = current + 1;
   const nextStage = isLast ? null : getStage(nextId);
 
+  // Empaque con envío: hay que elegir a dónde se manda el paquete
+  const needsAddress = current === 9 && Number(order.sending) === 1;
+  const missingClient = needsAddress && order.clientId == null;
+  const canConfirm =
+    !isLast && !submitting && (!needsAddress || (!missingClient && selectedAddressId != null));
+
   async function handleConfirm() {
     if (!order) return;
     setSubmitting(true);
+    setError(null);
     try {
+      if (needsAddress && selectedAddressId != null && selectedAddressId !== order.address) {
+        await updateOrderDeliveryAddress(order.id, { addressId: selectedAddressId });
+      }
       const ok = await onConfirm();
       if (ok) onOpenChange(false);
+    } catch (err: any) {
+      setError(err?.message ?? "No se pudo completar la acción.");
     } finally {
       setSubmitting(false);
     }
@@ -106,6 +128,25 @@ export function UpdateStatusDialog({ order, open, onOpenChange, onConfirm }: Pro
           })}
         </ol>
 
+        {needsAddress && (
+          <div className="border-t border-slate-200 p-4">
+            <p className="mb-2 text-sm font-medium text-slate-800">Dirección de envío</p>
+            {order.clientId == null ? (
+              <p className="text-sm text-amber-600">
+                Esta orden no tiene un cliente asignado, así que no se puede elegir una dirección.
+              </p>
+            ) : (
+              <DeliveryAddressPicker
+                clientId={order.clientId}
+                selectedId={selectedAddressId}
+                onSelect={setSelectedAddressId}
+              />
+            )}
+          </div>
+        )}
+
+        {error && <p className="px-4 pb-2 text-sm text-red-500">{error}</p>}
+
         <div className="flex justify-end gap-2 border-t border-slate-200 p-4">
           <button
             onClick={() => onOpenChange(false)}
@@ -115,7 +156,7 @@ export function UpdateStatusDialog({ order, open, onOpenChange, onConfirm }: Pro
             Cancelar
           </button>
           <button
-            disabled={isLast || submitting}
+            disabled={!canConfirm}
             onClick={handleConfirm}
             className="flex items-center gap-1.5 rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-40"
           >

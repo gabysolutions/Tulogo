@@ -1,7 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, AlertTriangle } from "lucide-react";
-import Swal from "sweetalert2";
-import { getStage } from "../../types/order";
+
 
 import { useOrderDetail } from "../../hooks/useOrderDetail";
 import { canAdvanceStage, missingPiecesCount } from "../../utils/orderValidation";
@@ -12,15 +11,21 @@ import OrderHistory from "../../components/orders/OrderHistory";
 import OrderDetailsTable from "../../components/orders/OrderDetailsTable";
 import OrderSizes from "../../components/orders/OrderSizes";
 
+import { useOrderAdvance } from "../../hooks/useOrderAdvance";
+
 export default function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const orderId = Number(id);
+ 
 
-  const { order, movements, loading, error,
-     addDetail, updateDetail, removeDetail, advanceStage,
-      refresh,
-     } =useOrderDetail(orderId);
+const { order, movements, loading, error,
+  addDetail, updateDetail, removeDetail, advanceStage, refresh,
+} = useOrderDetail(orderId);
+
+const { requestAdvance, addressModal } = useOrderAdvance(async () => {
+  await advanceStage();
+});
 
   if (loading) {
     return (
@@ -47,42 +52,7 @@ export default function OrderDetailPage() {
   const blocked = !canAdvanceStage(order);
   const missing = missingPiecesCount(order);
 
-  async function handleAdvance() {
-    if (!order) return;
-
-    const currentStage = getStage(order.status);
-    const nextStage = getStage(order.status + 1);
-
-    const result = await Swal.fire({
-      title: "¿Avanzar etapa?",
-      html: `Pasarás de <b>${currentStage.label}</b> a <b>${nextStage.label}</b>.`,
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonText: "Sí, avanzar",
-      cancelButtonText: "Cancelar",
-      confirmButtonColor: "#0f172a",
-      cancelButtonColor: "#6b7280",
-    });
-
-    if (!result.isConfirmed) return;
-
-    try {
-      await advanceStage();
-      Swal.fire({
-        title: "Etapa actualizada",
-        text: `Ahora en: ${nextStage.label}`,
-        icon: "success",
-        timer: 1500,
-        showConfirmButton: false,
-      });
-    } catch (err: any) {
-      Swal.fire({
-        title: "No se pudo avanzar",
-        text: err?.message ?? "Ocurrió un error al avanzar la etapa.",
-        icon: "error",
-      });
-    }
-  }
+  
 
   return (
     <main className="mx-auto w-full max-w-7xl px-6 py-8">
@@ -109,7 +79,7 @@ export default function OrderDetailPage() {
             </span>
           )}
           <button
-            onClick={handleAdvance}
+           onClick={() => requestAdvance(order)}
             disabled={order.status >= 10 || blocked}
             title={
               blocked
@@ -141,6 +111,7 @@ export default function OrderDetailPage() {
           <OrderHistory movements={movements} />
         </aside>
       </div>
+       {addressModal}
     </main>
   );
 }

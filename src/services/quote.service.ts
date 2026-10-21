@@ -247,3 +247,8 @@ export async function addQuoteIva(id: number): Promise<QuoteIvaResponse> {
   const { data } = await http.patch<QuoteIvaResponse>(`/quote/${id}/iva`);
   return data;
 }
+
+export async function createQuoteShareLink(id: number): Promise<string> {
+  const { data } = await http.post<{ url: string }>(`/quote/${id}/share-link`);
+  return data.url;
+}

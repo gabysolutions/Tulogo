@@ -100,23 +100,37 @@ export function PieceCard({
           </select>
         </Field>
 
-        {articles.length > 1 && (
-          <div className="col-span-2">
-            <Field label="Artículo" htmlFor={id("art")} error={errors.articleId} errId={id("art-err")}>
-              <select
-                id={id("art")}
-                className="field"
-                value={piece.articleId ?? ""}
-                aria-invalid={!!errors.articleId}
-                aria-describedby={errors.articleId ? id("art-err") : undefined}
-                onChange={(e) => onChange({ articleId: e.target.value ? Number(e.target.value) : null })}
-              >
-                <option value="">Elegir…</option>
-                {articles.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
-              </select>
-            </Field>
-          </div>
-        )}
+       {articles.length > 1 && (() => {
+          
+          const selectable = articles.filter((a) => a.id === piece.articleId || a.used < a.quota);
+
+          return (
+            <div className="col-span-2">
+              <Field label="Artículo" htmlFor={id("art")} error={errors.articleId} errId={id("art-err")}>
+                <select
+                  id={id("art")}
+                  className="field"
+                  value={piece.articleId ?? ""}
+                  aria-invalid={!!errors.articleId}
+                  aria-describedby={errors.articleId ? id("art-err") : undefined}
+                  onChange={(e) => onChange({ articleId: e.target.value ? Number(e.target.value) : null })}
+                >
+                  <option value="">Elegir…</option>
+                  {selectable.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.name} · {a.used >= a.quota ? "completo" : `faltan ${a.quota - a.used}`}
+                    </option>
+                  ))}
+                </select>
+                {selectable.length === 0 && piece.articleId == null && (
+                  <span className="text-xs text-muted-foreground">
+                    Ya capturaste todas las piezas de la orden.
+                  </span>
+                )}
+              </Field>
+            </div>
+          );
+        })()}
 
         <div className="col-span-2">
           <Field label="Observación (opcional)" htmlFor={id("obs")}>

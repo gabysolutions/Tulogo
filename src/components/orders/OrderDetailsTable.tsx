@@ -23,7 +23,7 @@ interface Props {
    onRefresh: () => Promise<unknown> | void;
 }
 
-const SIZES: OrderSize[] = ["XS", "S", "M", "L", "XL"];
+const SIZES: OrderSize[] = ["2","3","4","6","8","10","12","14","16","XCH", "CH", "M", "G", "XL","2XL","3XL","4XL","5XL","6XL"];
 const GENDERS: { value: OrderGender; label: string }[] = [
   { value: "M", label: "Masculino" },
   { value: "F", label: "Femenino" },
@@ -73,9 +73,10 @@ export default function OrderDetailsTable({ order, onAddDetail, onUpdateDetail, 
 
   if (!order) return null;
 
+  const isConfiguring = order.status <= 1;
   const missing = order.numberPieces - order.details.length;
   const complete = missing <= 0;
-
+ 
   function patchAddForm(patch: Partial<typeof EMPTY_ADD_FORM>) {
     setAddForm((prev) => ({ ...prev, ...patch }));
     setAddError(null);
@@ -83,7 +84,6 @@ export default function OrderDetailsTable({ order, onAddDetail, onUpdateDetail, 
 
   async function handleAddSubmit() {
     if (!addForm.articleId) return setAddError("Selecciona el artículo.");
-    if (!addForm.nickname.trim()) return setAddError("El apodo/nombre en prenda es obligatorio.");
     if (!addForm.size) return setAddError("Selecciona la talla.");
     if (!addForm.gender) return setAddError("Selecciona el género.");
 
@@ -238,6 +238,9 @@ export default function OrderDetailsTable({ order, onAddDetail, onUpdateDetail, 
   return (
     <section className="space-y-4">
       <div className="flex flex-wrap items-center gap-3">
+        {isConfiguring && (
+    <>
+
         <button
           onClick={() => setManualOpen((v) => !v)}
           className={`flex items-center gap-2 rounded-xl border px-4 py-2 text-sm transition ${
@@ -271,10 +274,12 @@ export default function OrderDetailsTable({ order, onAddDetail, onUpdateDetail, 
           <Download size={16} />
           Descargar formato (machote)
         </button>
+          </>
+  )}
       </div>
 
       {/* FORMULARIO AGREGAR */}
-      {manualOpen && (
+      {isConfiguring && manualOpen && (
         <div className="rounded-2xl border border-slate-200 bg-white p-4">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-6">
             <select
@@ -504,6 +509,7 @@ export default function OrderDetailsTable({ order, onAddDetail, onUpdateDetail, 
                     </td>
                     <td className="text-center">{detail.gender}</td>
                     <td>
+                      {isConfiguring && (
                       <div className="flex justify-center gap-3">
                         <button onClick={() => startEdit(detail)}>
                           <Pencil size={15} className="text-gray-500" />
@@ -512,6 +518,7 @@ export default function OrderDetailsTable({ order, onAddDetail, onUpdateDetail, 
                           <Trash2 size={15} className="text-red-500" />
                         </button>
                       </div>
+                      )}
                     </td>
                   </tr>
                 )

@@ -1,17 +1,17 @@
 import { useCallback, useEffect, useState } from "react";
 import { getDesignByIdService } from "../services/design.service";
-import type { Design } from "../types/design";
+import type { DesignById } from "../types/design";
 
 
 interface UseDesignResult {
-  design: Design | null;
+  design: DesignById | null;
   loading: boolean;
   error: string | null;
   refetch: () => void;
 }
 
 export function useDesign(id: number): UseDesignResult {
-  const [design, setDesign] = useState<Design | null>(null);
+  const [design, setDesign] = useState<DesignById | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

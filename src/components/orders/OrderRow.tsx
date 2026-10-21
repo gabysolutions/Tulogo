@@ -1,9 +1,8 @@
 import { Eye, ArrowRight } from "lucide-react";
-import Swal from "sweetalert2";
 
 import type { OrderListItem } from "../../types/order";
-import { CONFIG_STAGE_ID, getStage } from "../../types/order";
-
+import { CONFIG_STAGE_ID } from "../../types/order";
+import DeliveryAddressInfo from "./DeliveryAddressInfo";
 import PriorityBadge from "./PriorityBadge";
 import SegmentedStages from "./SegmentedStages";
 
@@ -16,25 +15,6 @@ interface Props {
 export default function OrderRow({ order, onOpen, onAdvance }: Props) {
   const missing = Math.max(0, order.numberPieces - order.piecesRegistered);
   const blocked = order.status === CONFIG_STAGE_ID && missing > 0;
-
-  async function handleAdvanceClick() {
-    const currentStage = getStage(order.status);
-    const nextStage = getStage(order.status + 1);
-
-    const result = await Swal.fire({
-      title: "¿Avanzar etapa?",
-      html: `<b>ORD-${String(order.id).padStart(4, "0")}</b> pasará de <b>${currentStage.label}</b> a <b>${nextStage.label}</b>.`,
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonText: "Sí, avanzar",
-      cancelButtonText: "Cancelar",
-      confirmButtonColor: "#0f172a",
-      cancelButtonColor: "#6b7280",
-    });
-
-    if (!result.isConfirmed) return;
-    onAdvance(order);
-  }
 
   return (
     <tr
@@ -72,6 +52,11 @@ export default function OrderRow({ order, onOpen, onAdvance }: Props) {
 
       {/* Fecha */}
       <td className="px-4 py-4">{new Date(order.deliveryDate).toLocaleDateString()}</td>
+       
+      <td className="px-4 py-4">
+        
+        <DeliveryAddressInfo sending={order.sending} addressId={order.address} />
+      </td>
 
       {/* Producción */}
       <td className="px-4 py-4">
@@ -87,7 +72,7 @@ export default function OrderRow({ order, onOpen, onAdvance }: Props) {
 
           {order.status < 10 && (
             <button
-              onClick={handleAdvanceClick}
+              onClick={() => onAdvance(order)}
               disabled={blocked}
               className="inline-flex items-center gap-1 rounded-lg border px-3 py-2 text-sm hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
               title={blocked ? "Completa la configuración (piezas faltantes) antes de avanzar" : undefined}

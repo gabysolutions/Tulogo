@@ -35,9 +35,9 @@ export function Clientes() {
         actions={
           <button
             onClick={() => setCreating(true)}
-            className="mr-100 bg-blue-600  text-white inline-flex items-center gap-2 rounded-md bg-primary px-5 py-3 text-m text-primary-foreground shadow-sm shadow-primary/30"
+            className="inline-flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-md bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 sm:w-auto sm:px-5 sm:py-3"
           >
-            <Plus className="size-6 text-white" /> Nuevo cliente
+            <Plus className="size-5" /> Nuevo cliente
           </button>
         }
       />

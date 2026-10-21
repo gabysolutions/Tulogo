@@ -14,6 +14,7 @@ import { PasteListModal, type ParsedRow } from "../../components/publicOrder/Pas
 import { ProgressBar } from "../../components/publicOrder/ProgressBar";
 import { StatusMessage } from "../../components/publicOrder/StatusMessage";
 import { Modal } from "../../components/publicOrder/Modal";
+import { ArticleProgress } from "../../components/publicOrder/ArticleProgress";
 
 type View = "loading" | "notfound" | "unavailable" | "error" | "form" | "success";
 
@@ -101,10 +102,15 @@ function OrderForm({ token }: { token: string }) {
     [order],
   );
 
-  const articleOptions = useMemo<ArticleOption[]>(
-    () => order?.articles.map((a) => ({ id: a.articleId, name: `${a.article} ${a.category}` })) ?? [],
-    [order],
-  );
+const articleOptions = useMemo<ArticleOption[]>(() => {
+  if (!order) return [];
+  return order.articles.map((a) => ({
+    id: a.articleId,
+    name: `${a.article} ${a.category}`,
+    quota: Math.max(a.amount - a.piecesRegistered, 0),
+    used: pieces.filter((p) => p.articleId === a.articleId).length,
+  }));
+}, [order, pieces]);
 
   const errors = useMemo(() => {
     const map: Record<string, PieceErrors> = {};
@@ -112,7 +118,6 @@ function OrderForm({ token }: { token: string }) {
     for (const p of pieces) {
       const e: PieceErrors = {};
       if (!p.size) e.size = "La talla es obligatoria";
-      if (!p.number) e.number = "Obligatorio";
       if (order.articles.length > 1 && p.articleId == null) e.articleId = "Elige un artículo";
       if (Object.keys(e).length) map[p.uid] = e;
     }
@@ -225,7 +230,7 @@ function OrderForm({ token }: { token: string }) {
       <div className="sticky top-0 z-20 -mx-4 mb-4 border-b bg-background/90 px-4 py-3 backdrop-blur">
         <ProgressBar value={filled} max={expectedPieces} />
       </div>
-
+      <ArticleProgress articles={articleOptions} />
       <div className="mb-4 flex gap-2">
         <button type="button" className="btn-secondary flex-1" onClick={() => setPasteOpen(true)}>
           <ClipboardPaste className="h-5 w-5" /> Pegar lista

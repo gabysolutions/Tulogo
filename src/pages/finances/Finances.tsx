@@ -81,15 +81,15 @@ export default function FinancePage() {
               month={month}
             />
 
-            <section className="grid gap-4 xl:grid-cols-2">
-              <PaymentsList payments={data.payments} total={data.paymentAmount} />
-              <ExpensesList
-                expenses={data.expenses}
-                total={data.expenseAmount}
-                onCancel={handleCancel}
-                onAdd={() => setOpenExpense(true)}
-              />
-            </section>
+          <section className="grid gap-4 xl:grid-cols-2 xl:items-start [&>*]:min-w-0">
+            <PaymentsList payments={data.payments} total={data.paymentAmount} />
+            <ExpensesList
+              expenses={data.expenses}
+              total={data.expenseAmount}
+              onCancel={handleCancel}
+              onAdd={() => setOpenExpense(true)}
+            />
+          </section>
 
             <TodayMovements currentDay={data.currentDay} />
 

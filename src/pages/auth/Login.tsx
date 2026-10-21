@@ -1,18 +1,15 @@
 import { useState, type FormEvent, useEffect } from "react";
-import {  User, Lock, Loader2 } from "lucide-react";
+import { User, Lock, Loader2, Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
-import logo from "../../../public/logo1.png"
+import logo from "../../../public/logo1.png";
 import { useAuth } from "../../context/AuthContext";
 
 export default function Login() {
   const navigate = useNavigate();
 
-  const {
-    login,
-    isAuthenticated,
-  } = useAuth();
+  const { login, isAuthenticated } = useAuth();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -67,11 +64,11 @@ export default function Login() {
           <div className="rounded-3xl bg-white/85 px-8 py-10 backdrop-blur-xl sm:px-10">
             {/* Brand */}
             <div className="mb-8 flex flex-col items-center text-center">
-              <div className="mb-4 flex  items-center justify-center  text-white  transition-transform duration-300 hover:rotate-6 hover:scale-110">
+              <div className="mb-4 flex items-center justify-center text-white transition-transform duration-300 hover:rotate-6 hover:scale-110">
                 <img className="h-25 w-30" src={logo} alt="" />
               </div>
 
-              <h1 className="text-2xl bg-gradient-to-r from-blue-500 via-indigo-500 to-indigo-500 bg-clip-text text-transparent font-bold">
+              <h1 className="bg-gradient-to-r from-blue-500 via-indigo-500 to-indigo-500 bg-clip-text text-2xl font-bold text-transparent">
                 Tu Logo en Todo
               </h1>
 
@@ -85,7 +82,7 @@ export default function Login() {
                 id="username"
                 label="Usuario"
                 type="text"
-                icon={<User className="h-4 w-4 " />}
+                icon={<User className="h-4 w-4" />}
                 value={username}
                 onChange={setUsername}
                 placeholder="Ingresa tu usuario"
@@ -122,8 +119,6 @@ export default function Login() {
                 <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
               </button>
             </form>
-
-           
           </div>
         </div>
       </div>
@@ -152,12 +147,14 @@ function Field({
   placeholder,
   autoComplete,
 }: FieldProps) {
+  const [showPassword, setShowPassword] = useState(false);
+
+  const isPassword = type === "password";
+  const inputType = isPassword && showPassword ? "text" : type;
+
   return (
     <div className="space-y-2">
-      <label
-        htmlFor={id}
-        className="text-sm font-medium text-slate-700"
-      >
+      <label htmlFor={id} className="text-sm font-medium text-slate-700">
         {label}
       </label>
 
@@ -168,14 +165,29 @@ function Field({
 
         <input
           id={id}
-          type={type}
+          type={inputType}
           required
           autoComplete={autoComplete}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="w-full rounded-xl border border-slate-200 bg-white/70 py-3 pl-10 pr-3 text-sm text-blue-600 outline-none transition-all placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/15"
+          // text-base en móvil evita el zoom automático de iOS al enfocar el campo
+          className={`w-full rounded-xl border border-slate-200 bg-white/70 py-3 pl-10 text-base text-blue-600 outline-none transition-all placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/15 sm:text-sm ${
+            isPassword ? "pr-11" : "pr-3"
+          }`}
         />
+
+        {isPassword && (
+          <button
+            type="button"
+            onClick={() => setShowPassword((v) => !v)}
+            aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+            aria-pressed={showPassword}
+            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg p-2 text-slate-400 transition-colors hover:text-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40"
+          >
+            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
+        )}
       </div>
     </div>
   );

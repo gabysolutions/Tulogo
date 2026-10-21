@@ -1,5 +1,5 @@
 import { http } from "./http";
-import type { ClientAddress, ClientAddressPayload } from "../types/client";
+import type { ClientAddress, ClientAddressPayload ,UpdateOrderDeliveryAddressPayload} from "../types/client";
 
 interface ClientAddressDTO {
   id: number;
@@ -55,5 +55,13 @@ export async function updateClientAddress(
 
 export async function deleteClientAddress(id: number): Promise<MessageResponse> {
   const { data } = await http.delete<MessageResponse>(`/client-address/${id}`);
+  return data;
+}
+
+export async function updateOrderDeliveryAddress(
+  orderId: number,
+  payload: UpdateOrderDeliveryAddressPayload
+) {
+  const { data } = await http.patch(`/order/${orderId}/delivery-address`, payload);
   return data;
 }

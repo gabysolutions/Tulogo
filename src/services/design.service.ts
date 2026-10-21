@@ -10,6 +10,10 @@ import type {
 DesignsPagination,
   DesignerOption,
   GetDesignsParams,
+  GetDesignByIdDTO,
+  DesignDetailByIdDTO,
+  DesignById,
+  DesignDetailById,
 } from "../types/design";
 export type { GetDesignsParams };
 
@@ -29,6 +33,43 @@ function mapDetail(dto: DesignDetailDTO): DesignDetail {
     comments: dto.comments ?? [],
   };
 }
+
+function mapDesignById(dto: GetDesignByIdDTO): DesignById {
+  return {
+    id: dto.id,
+    quoteId: dto.quoteId,
+    designerId: dto.designerId ?? null,
+    designerName: dto.designer,
+    deliveryDate: dto.delivery_date,
+    clientId: dto.clientId,
+    clientName: [dto.name, dto.paternalLastName, dto.maternalLastName]
+      .map((s) => s?.trim())
+      .filter((s) => s && s !== ".")
+      .join(" "),
+    clientPhone: dto.phone,
+    status: dto.status,
+    details: dto.details.map(mapDetailById),
+  };
+}
+
+function mapDetailById(dto: DesignDetailByIdDTO): DesignDetailById {
+  return {
+    id: dto.id,
+    articleId: dto.articleId,
+    description: dto.description,
+    category: dto.category,
+    fabricType: dto.fabric_type,
+    amount: dto.amount,
+    teamName: dto.team_name,
+    designImg: dto.design_img,
+    printerType: dto.printer_type,
+    observations: dto.observations,
+    status: dto.status,
+    files: dto.files ?? [],
+    comments: dto.comments ?? [],
+  };
+}
+
 
 function mapDesign(dto: DesignDTO): Design {
   return {
@@ -79,9 +120,9 @@ export const getDesignsService = async (
 
 
 
-export const getDesignByIdService = async (id: number): Promise<Design> => {
-  const { data } = await http.get<DesignDTO>(`/design/${id}`);
-  return mapDesign(data);
+export const getDesignByIdService = async (id: number): Promise<DesignById> => {
+  const { data } = await http.get<GetDesignByIdDTO>(`/design/${id}`);
+  return mapDesignById(data);
 };
 
 

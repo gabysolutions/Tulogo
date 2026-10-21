@@ -529,14 +529,13 @@ export default function QuoteFormModal({
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <ClientSearchField
-                  clients={clients}
-                  selectedClient={selectedClient}
+                 selectedClient={selectedClient}
                   onSelectClient={setSelectedClient}
                   isNewClient={isNewClient}
                   onIsNewClientChange={setIsNewClient}
                   newClientData={newClientData}
                   onNewClientDataChange={setNewClientData}
-                />
+                                />
                 {attemptedSave && errors.client && (
                   <p className="mt-1 text-xs text-red-600">{errors.client}</p>
                 )}

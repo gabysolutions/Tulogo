@@ -8,19 +8,30 @@ interface Props {
 
 export default function RoleSummaryCards({ users }: Props) {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-5">
-      {ROLE_OPTIONS.map(({ value, label }) => (
-        <div key={value} className="rounded-xl border border-slate-200 bg-white p-4">
-          <div className="size-8 rounded-lg bg-blue-100 text-blue grid place-items-center mb-2">
-            <ShieldCheck className="size-4 text-blue-700" />
+    <div
+      className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5
+                 [&>*:last-child:nth-child(odd)]:col-span-2
+                 sm:[&>*:last-child:nth-child(odd)]:col-span-1"
+    >
+      {ROLE_OPTIONS.map(({ value, label }) => {
+        const count = users.filter((u) => u.role === value).length;
+
+        return (
+          <div
+            key={value}
+            className="min-w-0 rounded-xl border border-slate-200 bg-white p-3 sm:p-4"
+          >
+            <div className="mb-2 grid size-8 place-items-center rounded-lg bg-blue-100">
+              <ShieldCheck className="size-4 text-blue-700" />
+            </div>
+            <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Rol</p>
+            <p className="truncate text-sm font-semibold">{label}</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {count} {count === 1 ? "usuario" : "usuarios"}
+            </p>
           </div>
-          <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Rol</p>
-          <p className="font-semibold text-sm">{label}</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            {users.filter((u) => u.role === value).length} usuarios
-          </p>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

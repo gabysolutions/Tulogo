@@ -148,3 +148,62 @@ page?: number;
   designer?: number;
   order?: "ASC" | "DESC";
 }
+
+export interface DesignDetailByIdDTO {
+  id: number;
+  articleId: number;
+  description: string;
+  category: string;
+  fabric_type: number;
+  amount: number;
+  team_name: string | null;
+  design_img: string | null;
+  printer_type: string | null;
+  observations: string | null;
+  status: DesignDetailStatus;
+  files: DesignFile[];
+  comments: DesignComment[];
+}
+export interface GetDesignByIdDTO {
+  id: number;
+  quoteId: number;
+  designerId: number | null;
+  designer: string;
+  delivery_date: string;
+  clientId: number;
+  name: string;
+  paternalLastName: string;
+  maternalLastName: string;
+  phone: string;
+  status: DesignStatus;
+  details: DesignDetailByIdDTO[];
+}
+
+export interface DesignDetailById {
+  id: number;
+  articleId: number;
+  description: string;
+  category: string;
+  fabricType: number;
+  amount: number;
+  teamName: string | null;
+  designImg: string | null;
+  printerType: string | null;
+  observations: string | null;
+  status: DesignDetailStatus;
+  files: DesignFile[];
+  comments: DesignComment[];
+}
+
+export interface DesignById {
+  id: number;
+  quoteId: number;
+  designerId: number | null;
+  designerName: string;
+  deliveryDate: string;
+  clientId: number;
+  clientName: string;         
+  clientPhone: string;
+  status: DesignStatus;
+  details: DesignDetailById[];
+}

@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { OrdersHeader, OrdersStats, OrdersFilters, OrdersTable } from "../../components/orders";
 import { useOrders } from "../../hooks/useOrders";
+import { useOrderAdvance } from "../../hooks/useOrderAdvance";
 import type { OrderListItem } from "../../types/order";
 
 export default function Orders() {
@@ -20,8 +21,11 @@ export default function Orders() {
     advanceStage,
   } = useOrders();
 
+  const { requestAdvance, addressModal } = useOrderAdvance(async (order: OrderListItem) => {
+    await advanceStage(order.id, order.status);
+  });
+
   const handleOpen = (order: OrderListItem) => navigate(`/pedidos/${order.id}`);
-  const handleAdvance = (order: OrderListItem) => advanceStage(order.id, order.status);
 
   return (
     <main className="mx-auto w-full px-6 py-8">
@@ -45,9 +49,11 @@ export default function Orders() {
         {loading && <p className="text-sm text-slate-400">Cargando pedidos...</p>}
         {error && <p className="text-sm text-red-500">Error al cargar pedidos.</p>}
         {!loading && !error && (
-          <OrdersTable orders={orders} onOpen={handleOpen} onAdvance={handleAdvance} />
+          <OrdersTable orders={orders} onOpen={handleOpen} onAdvance={requestAdvance} />
         )}
       </section>
+
+      {addressModal}
     </main>
   );
 }
