@@ -64,10 +64,28 @@ function mapUserTypeBreakdown(dto: UserTypeBreakdownDTO): UserTypeBreakdown {
 
 // ---- Servicio ----
 
+interface CreateUserRequestDTO {
+  name: string;
+  paternalLastName: string;
+  maternalLastName: string;
+  role: UserRole;
+  username: string;
+  password: string;
+}
+
 export const createUserService = async (
   payload: CreateUserPayload
 ): Promise<CreateUserResponse> => {
-  const { data } = await http.post<CreateUserResponse>("/user", payload);
+  const body: CreateUserRequestDTO = {
+    name: payload.name,
+    paternalLastName: payload.paternal_last_name,
+    maternalLastName: payload.maternal_last_name,
+    role: payload.role,
+    username: payload.username,
+    password: payload.password,
+  };
+
+  const { data } = await http.post<CreateUserResponse>("/user", body);
   return data;
 };
 
@@ -98,7 +116,16 @@ export const updateUserService = async (
   id: number,
   payload: UpdateUserPayload
 ): Promise<SimpleMessageResponse> => {
-  const { data } = await http.put<SimpleMessageResponse>(`/user/${id}`, payload);
+  const body = {
+    name: payload.name,
+    paternalLastName: payload.paternal_last_name,
+    maternalLastName: payload.maternal_last_name,
+    role: payload.role,
+    username: payload.username,
+    ...(payload.password ? { password: payload.password } : {}),
+  };
+
+  const { data } = await http.put<SimpleMessageResponse>(`/user/${id}`, body);
   return data;
 };
 

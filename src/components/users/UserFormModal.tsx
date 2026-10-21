@@ -1,7 +1,5 @@
-// components/usuarios/UserFormModal.tsx
-
 import { useEffect, useState, type FormEvent } from "react";
-import { X , Eye, EyeOff} from "lucide-react";
+import { X, Eye, EyeOff } from "lucide-react";
 import Swal from "sweetalert2";
 import { ROLE_OPTIONS } from "../../types/user";
 import type { CreateUserPayload, UpdateUserPayload, User, UserRole } from "../../types/user";
@@ -70,13 +68,12 @@ export default function UserFormModal({
   const [showPassword, setShowPassword] = useState(false);
   const UPPERCASE_FIELDS: (keyof FormState)[] = ["name", "paternal_last_name", "maternal_last_name"];
 
-
   useEffect(() => {
     if (mode === "edit" && initialUser) {
       setForm({
-         name: initialUser.name.toUpperCase(),
-            paternal_last_name: initialUser.paternal_last_name.toUpperCase(),
-            maternal_last_name: initialUser.maternal_last_name.toUpperCase(),
+        name: initialUser.name.toUpperCase(),
+        paternal_last_name: initialUser.paternal_last_name.toUpperCase(),
+        maternal_last_name: initialUser.maternal_last_name.toUpperCase(),
         role: initialUser.role,
         username: initialUser.username,
         password: "",
@@ -90,9 +87,9 @@ export default function UserFormModal({
   if (!open) return null;
 
   const handleChange = (field: keyof FormState, value: string) => {
-  const finalValue = UPPERCASE_FIELDS.includes(field) ? value.toUpperCase() : value;
-  setForm((prev) => ({ ...prev, [field]: finalValue }));
-};
+    const finalValue = UPPERCASE_FIELDS.includes(field) ? value.toUpperCase() : value;
+    setForm((prev) => ({ ...prev, [field]: finalValue }));
+  };
 
   const errors = {
     name: !form.name.trim() ? "El nombre es obligatorio." : undefined,
@@ -107,9 +104,28 @@ export default function UserFormModal({
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (submitting) return;
     setAttemptedSave(true);
 
     if (!canSave) return;
+
+    // Confirmación solo al editar
+    if (mode === "edit") {
+      const result = await Swal.fire({
+        icon: "question",
+        title: "¿Guardar cambios?",
+        text: form.password.trim()
+          ? `Se actualizarán los datos y la contraseña de ${form.name} ${form.paternal_last_name}.`
+          : `Se actualizarán los datos de ${form.name} ${form.paternal_last_name}.`,
+        showCancelButton: true,
+        confirmButtonText: "Sí, guardar",
+        cancelButtonText: "Cancelar",
+        confirmButtonColor: "#2563eb",
+        reverseButtons: true,
+      });
+
+      if (!result.isConfirmed) return;
+    }
 
     try {
       const ok =
@@ -239,34 +255,35 @@ export default function UserFormModal({
           </Field>
 
           <Field label="Contraseña">
-              <div className="relative">
-                <input
-                  className={`${inputCls} pr-10 ${attemptedSave && errors.password ? "border-red-400" : ""}`}
-                  type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  value={form.password}
-                  onChange={(e) => handleChange("password", e.target.value)}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                  tabIndex={-1}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-slate-400 hover:text-slate-600"
-                >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-              {attemptedSave && errors.password ? (
-                <p className="mt-1 text-xs text-red-600">{errors.password}</p>
-              ) : mode === "edit" ? (
-                <p className="mt-1 text-xs text-slate-400"></p>
-              ) : null}
-            </Field>
+            <div className="relative">
+              <input
+                className={`${inputCls} pr-10 ${attemptedSave && errors.password ? "border-red-400" : ""}`}
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                value={form.password}
+                onChange={(e) => handleChange("password", e.target.value)}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                tabIndex={-1}
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-slate-400 hover:text-slate-600"
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+            {attemptedSave && errors.password ? (
+              <p className="mt-1 text-xs text-red-600">{errors.password}</p>
+            ) : mode === "edit" ? (
+              <p className="mt-1 text-xs text-slate-400"></p>
+            ) : null}
+          </Field>
         </form>
 
         {/* Footer */}
         <div className="flex shrink-0 justify-end gap-2 border-t border-slate-200 bg-slate-50/50 px-5 py-4">
           <button
+            type="button"
             onClick={onClose}
             className="rounded-lg border border-slate-200 px-4 py-2 text-sm hover:bg-slate-100 transition-colors"
           >
