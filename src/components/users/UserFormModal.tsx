@@ -4,6 +4,7 @@ import Swal from "sweetalert2";
 import { ROLE_OPTIONS } from "../../types/user";
 import type { CreateUserPayload, UpdateUserPayload, User, UserRole } from "../../types/user";
 
+
 type FormState = {
   name: string;
   paternal_last_name: string;
