@@ -35,7 +35,7 @@ export function PrintMoldsDocument({ order }: Props) {
       <div className="flex flex-col gap-6 text-slate-900">
         <header className="flex items-start justify-between border-b border-slate-300 pb-4">
           <div>
-            <h1 className="text-xl font-bold">Orden de moldes</h1>
+            <h1 className="text-xl font-bold">Orden en personalizado</h1>
             <p className="text-sm text-slate-600">
               ORD-{String(order.id).padStart(4, "0")} · {folio}
             </p>
