@@ -13,19 +13,19 @@ export function DesignCard({ design }: { design: Design }) {
       to={`/diseños/${design.id}`}
       className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
     >
-      <div className="aspect-[4/3] w-full bg-slate-100">
-        {previewImage ? (
-          <img
-            src={previewImage}
-            alt={firstDetail?.description ?? "Diseño"}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-slate-300">
-            <Shirt className="h-10 w-10" />
+              <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100">
+            {previewImage ? (
+              <img
+                src={previewImage}
+                alt={firstDetail?.description ?? "Diseño"}
+                className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-slate-300">
+                <Shirt className="h-10 w-10" />
+              </div>
+            )}
           </div>
-        )}
-      </div>
 
       <div className="flex flex-1 flex-col gap-3 p-5">
         <div className="flex items-start justify-between gap-3">
