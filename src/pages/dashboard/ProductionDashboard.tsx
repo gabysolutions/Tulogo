@@ -77,13 +77,13 @@ const ProductionDashboard = () => {
     load();
   }, [load]);
 
-  // Solo las órdenes cuya etapa actual puede mover este usuario
+ 
   const myOrders = useMemo(
     () => orders.filter((o) => allowed.has(o.status)),
     [orders, allowed]
   );
 
-  // Agrupadas por etapa, en el orden del flujo
+  
   const grouped = useMemo(
     () =>
       STAGES.filter((s) => allowed.has(s.id)).map((s) => ({
