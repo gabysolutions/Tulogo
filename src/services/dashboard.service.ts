@@ -27,8 +27,8 @@ const STAGE_COLORS: Record<number, ActivityColor> = {
 
 
 const STAGE_LABELS: Record<keyof DashboardApiResponse["timeline"][0], string> = {
-  configuracion: "Configuración",
-  personalizado: "personalizado",
+  diseño: "Diseño",
+  personalizado: "Personalizado",
   impresion: "Impresión",
   tela: "Tela",
   sublimacion: "Sublimación",

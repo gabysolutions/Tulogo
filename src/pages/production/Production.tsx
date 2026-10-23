@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState,useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { Loader2, PackageSearch } from "lucide-react";
@@ -20,7 +20,11 @@ import { UpdateStatusDialog } from "../../components/production/UpdateStatusDial
 import { HistoryDrawer } from "../../components/production/HistoryDrawer";
 import { daysUntil } from "../../utils/productionUtils";
 
-// Ajusta si tu ruta de producción es distinta
+import { useAuth } from "../../context/AuthContext";
+import { getUserPrivilegesService } from "../../services/user.service";
+import { getProductionStatuses } from "../../constants/permissions";
+
+
 const PRODUCTION_PATH = "/production";
 
 const PRIORITY_WEIGHT: Record<Priority, number> = { alta: 0, media: 1, baja: 2 };
@@ -30,8 +34,7 @@ function getErrorMessage(err: unknown, fallback: string): string {
   return e?.response?.data?.message ?? e?.message ?? fallback;
 }
 
-// TODO: reemplaza por tus hooks reales (necesitan id + nombre).
-// Mientras estén vacíos, el toolbar oculta esos selects.
+
 const clientOptions: FilterOption[] = [];
 const designerOptions: FilterOption[] = [];
 
@@ -51,6 +54,15 @@ const Production = () => {
     clearFilters,
     refetch,
   } = useProductionOrders();
+  const { user } = useAuth();
+const [allowedStages, setAllowedStages] = useState<number[]>([]);
+
+useEffect(() => {
+  if (!user) return;
+  getUserPrivilegesService(user.id)
+    .then((privileges) => setAllowedStages(getProductionStatuses(privileges)))
+    .catch(console.error);
+}, [user]);
 
   const [sort, setSort] = useState<SortKey>("delivery");
 
@@ -204,6 +216,7 @@ const Production = () => {
               <OrderCard
                 key={order.id}
                 order={order}
+                allowedStages={allowedStages}
                 printing={printingId === order.id}
                 onViewDetails={openDetails}
                 onUpdateStatus={openStatus}

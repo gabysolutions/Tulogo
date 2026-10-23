@@ -4,7 +4,7 @@ export interface OrderStage {
 }
 
 export const STAGES: OrderStage[] = [
-  { id: 1, label: "Configuración" },
+  { id: 1, label: "Diseño" },
   { id: 2, label: "Personalizado" },
   { id: 3, label: "Impresión" },
   { id: 4, label: "Tela" },

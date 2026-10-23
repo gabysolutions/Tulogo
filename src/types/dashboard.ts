@@ -72,7 +72,7 @@ export interface DashboardApiCards {
 }
 
 export interface DashboardApiTimelineRaw {
-  configuracion: string;
+  diseño: string;
   personalizado: string;
   impresion: string;
   tela: string;

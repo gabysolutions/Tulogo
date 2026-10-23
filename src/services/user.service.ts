@@ -155,3 +155,32 @@ export const getAllPrivilegesService = async (): Promise<UserPrivilege[]> => {
   const { data } = await http.get<UserPrivilege[]>("/privilege");
   return data;
 };
+
+
+export const addProdPermissionService = async (userId: number, status: number) => {
+  const { data } = await http.post<SimpleMessageResponse>(
+    `/user/${userId}/prod-permission/${status}`
+  );
+  return data;
+};
+
+export const deleteProdPermissionService = async (userId: number, status: number) => {
+  const { data } = await http.delete<SimpleMessageResponse>(
+    `/user/${userId}/prod-permission/${status}`
+  );
+  return data;
+};
+
+export const addPrivilegeService = async (userId: number, privilegeId: number) => {
+  const { data } = await http.post<SimpleMessageResponse>(
+    `/user/${userId}/privilege/${privilegeId}`
+  );
+  return data;
+};
+
+export const deletePrivilegeService = async (userId: number, privilegeId: number) => {
+  const { data } = await http.delete<SimpleMessageResponse>(
+    `/user/${userId}/privilege/${privilegeId}`
+  );
+  return data;
+};

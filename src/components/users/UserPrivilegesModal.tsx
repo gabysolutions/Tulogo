@@ -1,10 +1,26 @@
-
-
 import { useEffect, useMemo, useState } from "react";
 import { X, Search, Check } from "lucide-react";
-import { getAllPrivilegesService, getUserPrivilegesService } from "../../services/user.service";
+import {
+  getAllPrivilegesService,
+  getUserPrivilegesService,
+  addPrivilegeService,
+  deletePrivilegeService,
+  addProdPermissionService,
+  deleteProdPermissionService,
+} from "../../services/user.service";
 import { ROLE_OPTIONS } from "../../types/user";
 import type { User, UserPrivilege } from "../../types/user";
+import { STAGES } from "../../types/order";
+
+const PRODUCTION_KEY = "PRODUCTION_PERMISSION";
+
+const isProductionPrivilege = (p: UserPrivilege) =>
+  p.key === PRODUCTION_KEY || p.description.toUpperCase() === "PRODUCCION";
+
+const TRANSITIONS = STAGES.slice(0, -1).map((stage, i) => ({
+  status: stage.id,
+  label: `${stage.label} → ${STAGES[i + 1].label}`,
+}));
 
 interface Props {
   open: boolean;
@@ -18,6 +34,9 @@ const roleLabel = (role: User["role"]) =>
 export default function UserPrivilegesModal({ open, user, onClose }: Props) {
   const [allPrivileges, setAllPrivileges] = useState<UserPrivilege[]>([]);
   const [checked, setChecked] = useState<Set<number>>(new Set());
+  const [initialChecked, setInitialChecked] = useState<Set<number>>(new Set());
+  const [prodStatuses, setProdStatuses] = useState<Set<number>>(new Set());
+  const [initialStatuses, setInitialStatuses] = useState<Set<number>>(new Set());
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -35,8 +54,18 @@ export default function UserPrivilegesModal({ open, user, onClose }: Props) {
           getUserPrivilegesService(user.id),
         ]);
 
+        const statuses = new Set(
+          userPrivileges
+            .find(isProductionPrivilege)
+            ?.detail?.map((d) => d.status) ?? []
+        );
+        const current = new Set(userPrivileges.map((p) => p.id));
+
         setAllPrivileges(catalog);
-        setChecked(new Set(userPrivileges.map((p) => p.id)));
+        setChecked(current);
+        setInitialChecked(current);
+        setProdStatuses(statuses);
+        setInitialStatuses(statuses);
       } catch (err) {
         console.error(err);
       } finally {
@@ -55,6 +84,9 @@ export default function UserPrivilegesModal({ open, user, onClose }: Props) {
     );
   }, [allPrivileges, search]);
 
+  const productionPrivilege = allPrivileges.find(isProductionPrivilege);
+  const productionChecked = !!productionPrivilege && checked.has(productionPrivilege.id);
+
   if (!open || !user) return null;
 
   const toggle = (id: number) => {
@@ -69,12 +101,40 @@ export default function UserPrivilegesModal({ open, user, onClose }: Props) {
     });
   };
 
+  const toggleStatus = (status: number) => {
+    setProdStatuses((prev) => {
+      const next = new Set(prev);
+      if (next.has(status)) {
+        next.delete(status);
+      } else {
+        next.add(status);
+      }
+      return next;
+    });
+  };
+
   const handleSave = async () => {
     try {
       setSaving(true);
 
-      // TODO: reemplazar por la llamada real, ej:
-      // await updateUserPrivilegesService(user.id, Array.from(checked));
+      // 1) Privilegios generales (primero, por si PRODUCCION debe existir antes de las etapas)
+      const privToAdd = [...checked].filter((id) => !initialChecked.has(id));
+      const privToRemove = [...initialChecked].filter((id) => !checked.has(id));
+
+      await Promise.all([
+        ...privToAdd.map((id) => addPrivilegeService(user.id, id)),
+        ...privToRemove.map((id) => deletePrivilegeService(user.id, id)),
+      ]);
+
+      // 2) Etapas de producción (si desmarcó PRODUCCION, se quitan todas)
+      const wanted = productionChecked ? prodStatuses : new Set<number>();
+      const toAdd = [...wanted].filter((s) => !initialStatuses.has(s));
+      const toRemove = [...initialStatuses].filter((s) => !wanted.has(s));
+
+      await Promise.all([
+        ...toAdd.map((s) => addProdPermissionService(user.id, s)),
+        ...toRemove.map((s) => deleteProdPermissionService(user.id, s)),
+      ]);
 
       onClose();
     } catch (err) {
@@ -136,6 +196,8 @@ export default function UserPrivilegesModal({ open, user, onClose }: Props) {
             <ul className="divide-y divide-slate-100">
               {filteredPrivileges.map((p) => {
                 const isChecked = checked.has(p.id);
+                const isProduction = isProductionPrivilege(p);
+
                 return (
                   <li key={p.id}>
                     <label className="flex cursor-pointer items-center justify-between gap-3 py-3 -mx-2 px-2 rounded-lg transition-colors hover:bg-slate-50">
@@ -161,10 +223,45 @@ export default function UserPrivilegesModal({ open, user, onClose }: Props) {
                       {isChecked && (
                         <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-0.5 text-[11px] font-medium text-green-700">
                           <span className="size-1.5 rounded-full bg-green-500" />
-                          Activo
+                          {isProduction ? `${prodStatuses.size} etapas` : "Activo"}
                         </span>
                       )}
                     </label>
+
+                    {/* Etapas de producción */}
+                    {isProduction && isChecked && (
+                      <div className="mb-3 ml-8 rounded-lg border border-slate-100 bg-slate-50/60 p-3">
+                        <p className="mb-2 text-xs font-medium text-slate-500">
+                          Puede mover una orden de:
+                        </p>
+                        <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
+                          {TRANSITIONS.map((t) => {
+                            const on = prodStatuses.has(t.status);
+                            return (
+                              <label
+                                key={t.status}
+                                className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-xs text-slate-700 hover:bg-white"
+                              >
+                                <span
+                                  className={`grid size-4 place-items-center rounded border transition-colors ${
+                                    on ? "border-blue-600 bg-blue-600" : "border-slate-300 bg-white"
+                                  }`}
+                                >
+                                  {on && <Check className="size-3 text-white" strokeWidth={3} />}
+                                </span>
+                                <input
+                                  type="checkbox"
+                                  checked={on}
+                                  onChange={() => toggleStatus(t.status)}
+                                  className="sr-only"
+                                />
+                                {t.label}
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </li>
                 );
               })}

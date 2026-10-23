@@ -65,9 +65,14 @@ export interface UpdateUserPayload {
 export interface SimpleMessageResponse {
   message: string;
 }
-
+export interface ProdPermissionDetail {
+  id: number;
+  userId: number;
+  status: number; 
+}
 export interface UserPrivilege {
   id: number;
   description: string;
   key: string;
+   detail?: ProdPermissionDetail[];
 }

@@ -1,7 +1,9 @@
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   AlertTriangle,
   ArrowLeft,
+  ArrowRight,
   FileText,
   Loader2,
   Package2,
@@ -11,11 +13,15 @@ import {
 
 import { useProductionOrder } from "../../hooks/useProduction";
 import { useOrderPdf } from "../../hooks/Useorderpdf";
-import { getStage, isCompleted, PRIORITY_META } from "../../types/order";
+import { useAuth } from "../../context/AuthContext";
+import { getUserPrivilegesService } from "../../services/user.service";
+import { updateOrderStatusService } from "../../services/orders.service";
+import { getStage, isCompleted, PRIORITY_META, STAGES } from "../../types/order";
 import { formatDate } from "../../utils/productionUtils";
 import { ProgressTrack } from "../../components/production/ProgressTrack";
-
-// Ajusta si tu ruta de listado es distinta
+import { canMoveFromStage, getProductionStatuses } from "../../constants/permissions";
+import { UpdateStatusDialog } from "../../components/production/UpdateStatusDialog"; 
+import { getApiErrorStatus } from "../../utils/apiError";
 const PRODUCTION_PATH = "/produccion";
 
 const GENDER_LABEL: Record<"M" | "F", string> = { M: "Masculino", F: "Femenino" };
@@ -32,6 +38,7 @@ function Meta({ label, value }: { label: string; value: string }) {
 const OrderDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const orderId = Number(id);
   const validId = Number.isInteger(orderId) && orderId > 0;
@@ -39,11 +46,34 @@ const OrderDetail = () => {
   const { order: data, loading, error, refetch } = useProductionOrder(validId ? orderId : null);
   const { openPdf, loadingId } = useOrderPdf();
 
-  // Evita pintar la orden anterior mientras carga la nueva
+  const [allowed, setAllowed] = useState<number[]>([]);
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  // Etapas que este usuario puede mover
+  useEffect(() => {
+    if (!user) return;
+    getUserPrivilegesService(user.id)
+      .then((privileges) => setAllowed(getProductionStatuses(privileges)))
+      .catch(console.error);
+  }, [user]);
+
   const order = data && data.id === orderId ? data : null;
   const printing = loadingId === orderId;
 
   const goBack = () => navigate(PRODUCTION_PATH);
+
+  
+  const handleConfirm = async (): Promise<boolean> => {
+  if (!order) return false;
+  try {
+    await updateOrderStatusService(order.id, { status: order.status });
+  } catch (err) {
+    if ([403, 409, 422].includes(getApiErrorStatus(err) ?? 0)) await refetch();
+    throw err; 
+  }
+  await refetch();
+  return true;
+};
 
   if (!validId) {
     return (
@@ -101,6 +131,9 @@ const OrderDetail = () => {
   const completed = isCompleted(order);
   const folio = `COT-${String(order.quoteId).padStart(4, "0")}`;
 
+  const nextStage = STAGES.find((s) => s.id === order.status + 1);
+  const canAdvance = !completed && !!nextStage && canMoveFromStage(allowed, order.status);
+
   return (
     <main className="mx-auto w-full max-w-5xl px-6 py-8">
       <div className="flex flex-col gap-6">
@@ -131,14 +164,26 @@ const OrderDetail = () => {
             <p className="text-sm text-slate-500">{order.client}</p>
           </div>
 
-          <button
-            onClick={() => openPdf(order.id)}
-            disabled={printing}
-            className="flex items-center justify-center gap-1.5 rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            {printing ? <Loader2 size={16} className="animate-spin" /> : <Printer size={16} />}
-            {printing ? "Generando..." : "Imprimir PDF"}
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            {canAdvance && nextStage && (
+              <button
+                onClick={() => setDialogOpen(true)}
+                className="flex items-center justify-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
+              >
+                <ArrowRight size={16} />
+                Avanzar a {nextStage.label}
+              </button>
+            )}
+
+            <button
+              onClick={() => openPdf(order.id)}
+              disabled={printing}
+              className="flex items-center justify-center gap-1.5 rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {printing ? <Loader2 size={16} className="animate-spin" /> : <Printer size={16} />}
+              {printing ? "Generando..." : "Imprimir PDF"}
+            </button>
+          </div>
         </header>
 
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
@@ -231,6 +276,19 @@ const OrderDetail = () => {
           </div>
         </section>
       </div>
+
+      <UpdateStatusDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        onConfirm={handleConfirm}
+        order={{
+          id: order.id,
+          status: order.status,
+          clientId: order.clientId,
+          sending: order.sending,
+          address: order.addressId, 
+        }}
+      />
     </main>
   );
 };
