@@ -1,4 +1,4 @@
-import { Eye, Pencil, HandCoins, Trash2, CheckCheck  } from "lucide-react";
+import { Eye, Pencil, HandCoins, Trash2, CheckCheck, PackagePlus  } from "lucide-react";
 
 import { QuoteStatus, type Quote } from "../../types/quote";
 
@@ -11,10 +11,11 @@ interface Props {
   onEdit: (quote: Quote) => void;
   onPay: (quote: Quote) => void;
    onAccept: (quote: Quote) => void;
+   onAddArticles: (quote: Quote) => void;
   onDelete: (quote: Quote) => void;
 }
 
-export default function QuoteTable({ quotes, onPreview, onEdit, onPay, onDelete,onAccept }: Props) {
+export default function QuoteTable({ quotes, onPreview, onEdit, onPay, onDelete,onAccept, onAddArticles }: Props) {
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
       <div className="overflow-x-auto">
@@ -139,6 +140,17 @@ export default function QuoteTable({ quotes, onPreview, onEdit, onPay, onDelete,
                         >
                           <Pencil size={18} />
                         </button>
+                        
+                       {quote.status === QuoteStatus.ACEPTADA && (
+                            <button
+                              onClick={() => onAddArticles(quote)}
+                              title="Agregar artículos"
+                              className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 transition hover:bg-violet-100 hover:text-violet-700"
+                            >
+                              <PackagePlus size={18} />
+                            </button>
+                          )}
+
 
                        {canAccept && (
 

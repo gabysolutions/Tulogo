@@ -10,6 +10,9 @@ import QuoteFormModal, {
 } from "../../components/quotes/QuoteFormModal";
 import QuoteEditModal from "../../components/quotes/QuoteEditModal";
 import AddPaymentModal from "../../components/quotes/AddPaymentModal";
+import AddArticlesModal, {
+  type AddArticlesSavePayload,
+} from "../../components/quotes/AddArticlesModal";
 
 import { useQuotes } from "../../hooks/useQuotes";
 import { useArticles } from "../../hooks/useArticles";
@@ -46,6 +49,7 @@ const Quotes = () => {
     deleteQuote,
     acceptQuote,
     addQuoteIva,
+    addQuoteArticles,
   } = useQuotes();
   const { hasRole } = useAuth();
   const { articles } = useArticles();
@@ -58,6 +62,7 @@ const Quotes = () => {
   const [editingQuote, setEditingQuote] = useState<Quote | null>(null);
   const [previewQuote, setPreviewQuote] = useState<Quote | null>(null);
   const [payingQuote, setPayingQuote] = useState<Quote | null>(null);
+  const [addingArticlesQuote, setAddingArticlesQuote] = useState<Quote | null>(null);
 
   const handleClearFilters = () => {
     setSearch("");
@@ -219,7 +224,7 @@ const Quotes = () => {
     try {
       const { message } = await addQuoteIva(quote.id);
 
-      // El modal tiene una copia vieja de la cotización, hay que cerrarlo
+      
       setEditingQuote(null);
 
       Swal.fire({
@@ -233,6 +238,37 @@ const Quotes = () => {
       const message =
         (err as AxiosError<{ message?: string }>).response?.data?.message ??
         "No se pudo agregar el IVA.";
+
+      Swal.fire({ icon: "error", title: "Error", text: message });
+    }
+  };
+
+  const handleAddArticles = async (payload: AddArticlesSavePayload) => {
+    try {
+      const { message } = await addQuoteArticles(payload.quoteId, {
+        totalAdded: payload.totalAdded,
+        articles: payload.items.map((i) => ({
+          articleId: i.articleId!,
+          fabricType: i.fabricTypeId!,
+          amount: i.qty,
+          unitPrice: i.price,
+          subtotal: i.qty * i.price,
+        })),
+      });
+
+      setAddingArticlesQuote(null);
+
+      Swal.fire({
+        icon: "success",
+        title: "¡Listo!",
+        text: message,
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    } catch (err) {
+      const message =
+        (err as AxiosError<{ message?: string }>).response?.data?.message ??
+        "No se pudieron agregar los artículos.";
 
       Swal.fire({ icon: "error", title: "Error", text: message });
     }
@@ -265,6 +301,7 @@ const Quotes = () => {
           onPreview={setPreviewQuote}
           onEdit={setEditingQuote}
           onAccept={handleAccept}
+          onAddArticles={setAddingArticlesQuote}
           onPay={setPayingQuote}
           onDelete={async (quote) => {
             const result = await Swal.fire({
@@ -327,6 +364,14 @@ const Quotes = () => {
         onClose={() => setEditingQuote(null)}
         onAddIva={handleAddIva}
         onSave={handleUpdate}
+      />
+
+      <AddArticlesModal
+        quote={addingArticlesQuote}
+        articles={articles}
+        fabricTypes={fabricTypes}
+        onClose={() => setAddingArticlesQuote(null)}
+        onSave={handleAddArticles}
       />
 
       <QuotePreviewModal

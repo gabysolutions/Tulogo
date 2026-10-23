@@ -97,3 +97,12 @@ export interface QuoteAcceptResponse {
 export interface QuoteIvaResponse {
   message: string;
 }
+
+export interface QuoteAddArticlesPayload {
+  totalAdded: number;
+  articles: QuoteArticlePayload[];
+}
+
+export interface QuoteAddArticlesResponse {
+  message: string;
+}

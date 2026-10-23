@@ -5,6 +5,8 @@ import type {
   QuotesPagination,
   QuoteCreatePayload,
   QuoteUpdatePayload,
+  QuoteAddArticlesPayload,
+  QuoteAddArticlesResponse,
   QuoteDetail,
   QuotePriority,
   QuoteStatus,
@@ -191,7 +193,12 @@ function buildUpdateBody(payload: QuoteUpdatePayload) {
     articles: payload.articles,
   };
 }
-
+function buildAddArticlesBody(payload: QuoteAddArticlesPayload) {
+  return {
+    totalAdded: payload.totalAdded,
+    articles: payload.articles,
+  };
+}
 
 
 export interface GetQuotesParams {
@@ -226,6 +233,17 @@ export async function updateQuote(id: number, payload: QuoteUpdatePayload): Prom
   return data;
 }
 
+export async function addQuoteArticles(
+  id: number,
+  payload: QuoteAddArticlesPayload
+): Promise<QuoteAddArticlesResponse> {
+  const { data } = await http.put<QuoteAddArticlesResponse>(
+    `/quote/${id}/articles`,
+    buildAddArticlesBody(payload)
+  );
+  return data;
+}
+
 export async function getQuotePdf(id: number): Promise<Blob> {
   const { data } = await http.get<Blob>(`/quote/${id}/PDF`, {
     responseType: "blob",
@@ -252,3 +270,4 @@ export async function createQuoteShareLink(id: number): Promise<string> {
   const { data } = await http.post<{ url: string }>(`/quote/${id}/share-link`);
   return data.url;
 }
+

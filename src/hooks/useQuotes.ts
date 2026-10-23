@@ -1,6 +1,24 @@
 import { useState, useCallback, useEffect } from "react";
-import { getQuotes, createQuote, updateQuote, deleteQuote, acceptQuote,addQuoteIva } from "../services/quote.service";
-import type { Quote, QuotesPagination, QuoteCreatePayload, QuoteUpdatePayload, QuotePriority,QuoteAcceptResponse,QuoteIvaResponse } from "../types/quote";
+import {
+  getQuotes,
+  createQuote,
+  updateQuote,
+  deleteQuote,
+  acceptQuote,
+  addQuoteIva,
+  addQuoteArticles,
+} from "../services/quote.service";
+import type {
+  Quote,
+  QuotesPagination,
+  QuoteCreatePayload,
+  QuoteUpdatePayload,
+  QuotePriority,
+  QuoteAcceptResponse,
+  QuoteIvaResponse,
+  QuoteAddArticlesPayload,
+  QuoteAddArticlesResponse,
+} from "../types/quote";
 
 interface UseQuotesResult {
   quotes: Quote[];
@@ -25,6 +43,10 @@ interface UseQuotesResult {
   deleteQuote: (id: number) => Promise<void>;
   acceptQuote: (id: number) => Promise<QuoteAcceptResponse>;
   addQuoteIva: (id: number) => Promise<QuoteIvaResponse>;
+  addQuoteArticles: (
+    id: number,
+    payload: QuoteAddArticlesPayload
+  ) => Promise<QuoteAddArticlesResponse>;
 }
 
 export function useQuotes(): UseQuotesResult {
@@ -38,7 +60,6 @@ export function useQuotes(): UseQuotesResult {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [page, setPage] = useState(1);
-  
 
   const fetchQuotes = useCallback(async () => {
     setLoading(true);
@@ -90,22 +111,31 @@ export function useQuotes(): UseQuotesResult {
   );
 
   const accept = useCallback(
-  async (id: number) => {
-    const response = await acceptQuote(id);
-    await fetchQuotes();
-    return response;
-  },
-  [fetchQuotes]
-);
+    async (id: number) => {
+      const response = await acceptQuote(id);
+      await fetchQuotes();
+      return response;
+    },
+    [fetchQuotes]
+  );
 
-const addIva = useCallback(
-  async (id: number) => {
-    const response = await addQuoteIva(id);
-    await fetchQuotes();
-    return response;
-  },
-  [fetchQuotes]
-);
+  const addIva = useCallback(
+    async (id: number) => {
+      const response = await addQuoteIva(id);
+      await fetchQuotes();
+      return response;
+    },
+    [fetchQuotes]
+  );
+
+  const addArticles = useCallback(
+    async (id: number, payload: QuoteAddArticlesPayload) => {
+      const response = await addQuoteArticles(id, payload);
+      await fetchQuotes();
+      return response;
+    },
+    [fetchQuotes]
+  );
 
   return {
     quotes,
@@ -130,5 +160,6 @@ const addIva = useCallback(
     deleteQuote: remove,
     acceptQuote: accept,
     addQuoteIva: addIva,
+    addQuoteArticles: addArticles,
   };
 }
