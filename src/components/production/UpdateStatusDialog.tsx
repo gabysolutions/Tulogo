@@ -4,7 +4,7 @@ import { STAGES, getStage } from "../../types/order";
 import type { ProductionOrderListItem } from "../../types/order";
 import { updateOrderDeliveryAddress } from "../../services/client-address.service";
 import DeliveryAddressPicker from "../production/DeliveryAddressPicker"; 
-import { getApiErrorStatus } from "../../utils/apiError";
+import {  getApiErrorMessage, getApiErrorStatus  } from "../../utils/apiError";
 
 interface Props {
   order: Pick<ProductionOrderListItem, "id" | "status" | "clientId" | "sending" | "address"> | null;
@@ -47,15 +47,22 @@ export function UpdateStatusDialog({ order, open, onOpenChange, onConfirm }: Pro
       if (needsAddress && selectedAddressId != null && selectedAddressId !== order.address) {
         await updateOrderDeliveryAddress(order.id, { addressId: selectedAddressId });
       }
-      const ok = await onConfirm();
-      if (ok) onOpenChange(false);
-    } catch (err: any) {
-      setError(err?.message ?? "No se pudo completar la acción.");
-    } finally {
-      setSubmitting(false);
-    }
-  }
+         const ok = await onConfirm();
+            if (ok) onOpenChange(false);
+          } catch (err) {
+            const status = getApiErrorStatus(err);
 
+            if (status === 403) {
+              setError("No tienes permiso para realizar esta acción.");
+            } else if (status === 404) {
+              setError("La orden o la dirección ya no existe.");
+            } else {
+              setError(getApiErrorMessage(err, "No se pudo completar la acción."));
+            }
+          } finally {
+            setSubmitting(false);
+          }
+        }
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-5"
