@@ -31,15 +31,17 @@ const EMPTY_FORM: FormState = {
   satUnitCode: DEFAULT_UNIT_CODE,
 };
 
-// Sugerencias comunes (el campo acepta cualquier clave del catálogo SAT)
+
 const SAT_UNITS = [
   { code: "H87", label: "Pieza" },
-  { code: "E48", label: "Unidad de servicio" },
-  { code: "KGM", label: "Kilogramo" },
-  { code: "MTR", label: "Metro" },
-  { code: "LTR", label: "Litro" },
-  { code: "XBX", label: "Caja" },
   { code: "SET", label: "Conjunto" },
+  { code: "PR", label: "Par" },
+  { code: "XPK", label: "Paquete" },
+  { code: "XBX", label: "Caja" },
+  { code: "E48", label: "Unidad de servicio" },
+  { code: "MTR", label: "Metro" },
+  { code: "KGM", label: "Kilogramo" },
+  { code: "LTR", label: "Litro" },
 ];
 
 const inputClass =
@@ -177,29 +179,20 @@ export function ArticleFormModal({ open, article, categories, onClose, onSave }:
 
               <label className="block">
                 <span className="mb-1 block text-xs font-medium text-slate-500">Clave unidad SAT</span>
-                <input
-                  className={`${inputClass} font-mono uppercase`}
-                  list="sat-units"
-                  maxLength={3}
-                  placeholder="H87"
+                <select
+                  className={inputClass}
                   value={form.satUnitCode}
-                  onChange={(e) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      satUnitCode: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 3),
-                    }))
-                  }
-                />
-                <datalist id="sat-units">
+                  onChange={(e) => setForm((prev) => ({ ...prev, satUnitCode: e.target.value }))}
+                >
                   {SAT_UNITS.map((u) => (
                     <option key={u.code} value={u.code}>
-                      {u.label}
+                      {u.code} — {u.label}
                     </option>
                   ))}
-                </datalist>
-                {form.satUnitCode && !unitCodeValid && (
-                  <span className="mt-1 block text-[11px] text-red-600">Debe tener 2 o 3 caracteres.</span>
-                )}
+                  {!SAT_UNITS.some((u) => u.code === form.satUnitCode) && form.satUnitCode && (
+                    <option value={form.satUnitCode}>{form.satUnitCode}</option>
+                  )}
+                </select>
               </label>
             </div>
           </div>
