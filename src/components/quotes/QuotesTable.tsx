@@ -46,7 +46,7 @@ export default function QuoteTable({ quotes, onPreview, onEdit, onPay, onDelete,
 
                 
               const canAccept =
-              quote.status === QuoteStatus.PENDIENTE && quote.advance === 0;
+              quote.status === QuoteStatus.PENDIENTE ;
               
               const canPay =
                 quote.balanceDue > 0 && quote.status !== QuoteStatus.CANCELADA;
