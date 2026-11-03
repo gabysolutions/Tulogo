@@ -181,7 +181,7 @@ function ItemRow({
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <Field label="Categoría">
+        <Field label="Articulo">
           <select
             className={selectCls}
             value={item.category}
@@ -200,7 +200,7 @@ function ItemRow({
           </select>
         </Field>
 
-        <Field label="Artículo">
+        <Field label="Descripción">
           <select
             className={selectCls}
             value={item.articleId ?? ""}

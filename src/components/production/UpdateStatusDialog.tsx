@@ -10,7 +10,6 @@ interface Props {
   order: Pick<ProductionOrderListItem, "id" | "status" | "clientId" | "sending" | "address"> | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  
   onConfirm: () => Promise<boolean>;
 }
 
