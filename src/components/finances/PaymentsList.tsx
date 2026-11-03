@@ -119,8 +119,9 @@ export function PaymentsList({ payments, total }: Props) {
               <p className="text-xs text-muted-foreground">{shortDate(p.registration_date)}</p>
               <p className="truncate font-medium">Cotización #{p.quoteId}</p>
               <p className="truncate text-sm text-muted-foreground capitalize">
-                {p.payment_method} · {p.register_user}
+                {p.payment_method} · {p.register_user} 
               </p>
+             
             </div>
             <span className="flex shrink-0 items-center gap-1 text-sm font-semibold text-success sm:text-base">
               <ArrowUpRight className="size-4" />+{money(p.amount)}

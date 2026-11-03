@@ -8,6 +8,7 @@ const LABELS: Record<keyof MonthlyExpenses, string> = {
   transport: "Transporte",
   publicity: "Publicidad",
   maintenance: "Mantenimiento",
+  payroll: "Nómina",
   service: "Servicios",
 };
 

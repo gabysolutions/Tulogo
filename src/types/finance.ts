@@ -10,6 +10,7 @@ export type ExpenseType =
   | "material"
   | "transporte"
   | "publicidad"
+  | "nomina"
   | "mantenimiento";
 
 export interface Expense {
@@ -17,6 +18,7 @@ export interface Expense {
   amount: number;
   type: ExpenseType;
   payment_method: PaymentMethod;
+  comment?: string | null;
   registration_date: string;
   register_user: string;
   status: number;
@@ -30,6 +32,7 @@ export interface MonthlyExpenses {
   publicity: number;
   maintenance: number;
   service: number;
+  payroll: number;
 }
 
 
@@ -64,6 +67,7 @@ export interface CreateExpenseDto {
   amount: number;
   type: ExpenseType;
   paymentMethod: PaymentMethod;
+  comment?: string | null;
 }
 
 export interface ApiMessageResponse {

@@ -86,6 +86,9 @@ export function ExpensesList({ expenses, total, onCancel, onAdd }: Props) {
                 <p className="truncate text-sm text-muted-foreground capitalize">
                   {e.payment_method} · {e.register_user}
                 </p>
+                 {e.comment && (
+                <p className="truncate text-sm text-muted-foreground">{e.comment}</p>
+              )}
               </div>
               <div className="flex shrink-0 flex-col items-end gap-1">
                 <span

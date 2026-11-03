@@ -10,6 +10,7 @@ import {
   type HTMLAttributes,
   type InputHTMLAttributes,
   type LabelHTMLAttributes,
+  type TextareaHTMLAttributes,
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
@@ -72,6 +73,19 @@ function Label({ className, ...props }: LabelHTMLAttributes<HTMLLabelElement>) {
 
 /* Dialog */
 const DialogContext = createContext<(v: boolean) => void>(() => {});
+
+function Textarea({ className, ...props }: TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return (
+    <textarea
+      className={cn(
+        "w-full resize-none rounded-md border bg-card px-3 py-2 text-sm outline-none",
+        "placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
 
 function Dialog({
   open,
@@ -272,6 +286,7 @@ const TYPES: { value: ExpenseType; label: string }[] = [
   { value: "transporte", label: "Transporte" },
   { value: "publicidad", label: "Publicidad" },
   { value: "mantenimiento", label: "Mantenimiento" },
+  { value: "nomina", label: "Nómina" },
 ];
 
 const METHODS: { value: PaymentMethod; label: string }[] = [
@@ -289,15 +304,17 @@ export function ExpenseDialog({ open, onOpenChange, onCreated }: Props) {
   const [type, setType] = useState<ExpenseType>("servicio");
   const [method, setMethod] = useState<PaymentMethod>("efectivo");
   const [amount, setAmount] = useState("");
+  const [comment, setComment] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
-  const reset = () => {
-    setType("servicio");
-    setMethod("efectivo");
-    setAmount("");
-    setError("");
-  };
+ const reset = () => {
+  setType("servicio");
+  setMethod("efectivo");
+  setAmount("");
+  setComment("");
+  setError("");
+};
 
   const save = async () => {
     const value = Number(amount);
@@ -312,6 +329,7 @@ export function ExpenseDialog({ open, onOpenChange, onCreated }: Props) {
         amount: value,
         type,
         paymentMethod: method,
+          comment: comment.trim() || undefined,
       });
       reset();
       onCreated();
@@ -369,6 +387,19 @@ export function ExpenseDialog({ open, onOpenChange, onCreated }: Props) {
                 onChange={(e) => setAmount(e.target.value)}
               />
             </div>
+            <div className="grid gap-2">
+            <Label htmlFor="e-comment">
+              Comentario <span className="text-muted-foreground">(opcional)</span>
+            </Label>
+            <Textarea
+              id="e-comment"
+              rows={3}
+              maxLength={400}
+              placeholder="Ej. Pago de luz del mes de octubre"
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+            />
+          </div>
             <div className="grid gap-2">
               <Label>Método de pago</Label>
               <Select value={method} onValueChange={(v) => setMethod(v as PaymentMethod)}>
