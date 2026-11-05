@@ -126,7 +126,7 @@ export function QuoteBillingDrawer({ quoteId, onClose, actions }: Props) {
 
               <div>
                 <h3 className="mb-3 text-sm font-semibold text-slate-900">Historial de facturas</h3>
-                <InvoiceHistory invoices={summary.invoices} actions={actions} onChanged={reload} />
+                <InvoiceHistory invoices={summary.invoices}  defaultEmail={summary.client?.email ?? undefined} actions={actions} onChanged={reload} />
               </div>
             </>
           )}

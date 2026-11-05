@@ -164,6 +164,8 @@ function mapSummary(dto: QuoteBillingSummaryDTO): QuoteBillingSummary {
           id: dto.client.id,
           name: dto.client.name,
           rfc: dto.client.rfc ?? null,
+          email: dto.client.email ?? null,
+          phone: dto.client.phone ?? null,
           fiscalName: dto.client.fiscalName ?? null,
           fiscalRegime: dto.client.fiscalRegime ?? null,
           fiscalZipCode: dto.client.fiscalZipCode ?? null,

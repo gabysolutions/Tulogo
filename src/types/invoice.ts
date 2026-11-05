@@ -111,6 +111,8 @@ export interface QuoteBillingClientDTO {
   id: number;
   name: string;
   rfc: string | null;
+  email: string | null;
+  phone: string | null;
   fiscalName: string | null;
   fiscalRegime: string | null;
   fiscalZipCode: string | null;
@@ -203,6 +205,8 @@ export interface QuoteBillingClient {
   id: number;
   name: string;
   rfc: string | null;
+  email: string | null;
+  phone: string | null;
   fiscalName: string | null;
   fiscalRegime: string | null;
   fiscalZipCode: string | null;
