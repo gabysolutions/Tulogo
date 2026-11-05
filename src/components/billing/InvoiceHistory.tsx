@@ -40,6 +40,7 @@ export function InvoiceHistory({ invoices, actions, defaultEmail, onChanged }: P
   };
 
 const sendEmail = async (inv: Invoice) => {
+  console.log("defaultEmail en InvoiceHistory:", defaultEmail);
   const Swal = await getSwal();
   const res = await Swal.fire<{ email: string; subject?: string }>({
     title: `Enviar factura ${inv.folio ?? ""}`,
@@ -51,7 +52,7 @@ const sendEmail = async (inv: Invoice) => {
         <input id="snd-subject" class="swal2-input" style="width:100%;margin:4px 0 10px" placeholder="Factura ${inv.folio ?? ""}" />
       </div>`,
     didOpen: () => {
-      const input = Swal.getPopup()?.querySelector("#snd-email") as HTMLInputElement | null;
+      const input = Swal.getPopup()?.querySelector<HTMLInputElement>("#snd-email");
       if (input && defaultEmail) input.value = defaultEmail;
     },
     showCancelButton: true,

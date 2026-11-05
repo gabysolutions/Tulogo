@@ -12,6 +12,7 @@ type Props = { quoteId: number | null; onClose: () => void; actions: BillingActi
 
 export function QuoteBillingDrawer({ quoteId, onClose, actions }: Props) {
   const { summary, loading, error, reload } = useQuoteBilling(quoteId);
+  console.log("email del cliente:", summary?.client?.email);
   const [issueOpen, setIssueOpen] = useState(false);
 
   useEffect(() => {
