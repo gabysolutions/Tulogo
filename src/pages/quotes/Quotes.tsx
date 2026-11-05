@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState,useEffect  } from "react";
 import Swal from "sweetalert2";
 
 import QuoteFilters from "../../components/quotes/QuoteFilters";
@@ -15,7 +15,7 @@ import AddArticlesModal, {
 } from "../../components/quotes/AddArticlesModal";
 
 import { useQuotes } from "../../hooks/useQuotes";
-import { useArticles } from "../../hooks/useArticles";
+import { useArticleCatalog } from "../../hooks/useArticleCatalog";
 import { useFabricTypes } from "../../hooks/useFabricTypes";
 import { useClients } from "../../hooks/useClients";
 import { useAuth } from "../../context/AuthContext";
@@ -52,7 +52,7 @@ const Quotes = () => {
     addQuoteArticles,
   } = useQuotes();
   const { hasRole } = useAuth();
-  const { articles } = useArticles();
+const { articles, refetch: refetchArticles } = useArticleCatalog();
   const { fabricTypes } = useFabricTypes();
   const { clients } = useClients();
 
@@ -63,6 +63,14 @@ const Quotes = () => {
   const [previewQuote, setPreviewQuote] = useState<Quote | null>(null);
   const [payingQuote, setPayingQuote] = useState<Quote | null>(null);
   const [addingArticlesQuote, setAddingArticlesQuote] = useState<Quote | null>(null);
+
+
+   useEffect(() => {
+    if (openModal || editingQuote || addingArticlesQuote) {
+      refetchArticles();
+    }
+  },  [openModal, editingQuote, addingArticlesQuote, refetchArticles]);
+
 
   const handleClearFilters = () => {
     setSearch("");
@@ -276,7 +284,7 @@ const Quotes = () => {
 
   return (
     <main className="mx-auto w-full px-6 py-8">
-      <QuoteHeader onNewQuote={() => setOpenModal(true)} />
+      <QuoteHeader onNewQuote={() => { refetchArticles(); setOpenModal(true); }} />
 
       <QuoteFilters
         search={search}
