@@ -52,10 +52,11 @@ const Quotes = () => {
     addQuoteArticles,
   } = useQuotes();
   const { hasRole } = useAuth();
-const { articles, refetch: refetchArticles } = useArticleCatalog();
+ const { articles, refetch: refetchArticles } = useArticleCatalog();
   const { fabricTypes } = useFabricTypes();
   const { clients } = useClients();
-
+  
+  
   const isAdmin = hasRole("administrador");
 
   const [openModal, setOpenModal] = useState(false);
