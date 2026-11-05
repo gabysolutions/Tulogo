@@ -41,7 +41,7 @@ export function InvoiceHistory({ invoices, actions, defaultEmail, onChanged }: P
 
   const sendEmail = async (inv: Invoice) => {
     const Swal = await getSwal();
-    const res = await Swal.fire<{ email: string; subject?: string; comments?: string }>({
+    const res = await Swal.fire<{ email: string; subject?: string }>({
       title: `Enviar factura ${inv.folio ?? ""}`,
       html: `
         <div style="text-align:left;font-size:14px">
@@ -55,15 +55,15 @@ export function InvoiceHistory({ invoices, actions, defaultEmail, onChanged }: P
       confirmButtonText: "Enviar",
       cancelButtonText: "Cancelar",
       confirmButtonColor: "#2563eb",
-      preConfirm: () => {
-        const email = (document.getElementById("snd-email") as HTMLInputElement).value.trim();
+        preConfirm: () => {
+        const popup = Swal.getPopup()!;
+        const email = (popup.querySelector("#snd-email") as HTMLInputElement).value.trim();
         if (!isValidEmail(email)) {
           Swal.showValidationMessage("Captura un correo válido");
           return false;
         }
-        const subject = (document.getElementById("snd-subject") as HTMLInputElement).value.trim() || undefined;
-        const comments = (document.getElementById("snd-comments") as HTMLTextAreaElement).value.trim() || undefined;
-        return { email, subject, comments };
+        const subject = (popup.querySelector("#snd-subject") as HTMLInputElement).value.trim() || undefined;
+        return { email, subject };
       },
     });
     if (!res.isConfirmed || !res.value) return;
