@@ -12,8 +12,8 @@ import ItemRow from "./shared/ItemRow";
 import { inputCls, selectCls } from "./shared/inputStyles";
 
 const DEFAULT_COSTO_ENVIO = 500;
+const IVA_RATE = 0.16;
 
-// Cuando se permita editar cotizaciones aceptadas, cambiar a true
 const ACCEPTED_FULL_EDIT_ENABLED = false;
 
 interface LineItem {
@@ -93,7 +93,13 @@ function getInitialShippingCost(quote: Quote): number {
     (acc, d) => acc + d.amount * d.unitPrice,
     0
   );
-  const derived = Math.round((quote.total - detailsSubtotal) * 100) / 100;
+
+
+  const totalWithoutIva = toBool(quote.iva)
+    ? quote.total / (1 + IVA_RATE)
+    : quote.total;
+
+  const derived = Math.round((totalWithoutIva - detailsSubtotal) * 100) / 100;
 
   return derived > 0 ? derived : DEFAULT_COSTO_ENVIO;
 }
@@ -159,10 +165,15 @@ export default function QuoteEditModal({
   }
 
   const subtotal = items.reduce((acc, i) => acc + i.qty * i.price, 0);
-  // Si no lleva envío, shippingAmount siempre es 0
-  const shippingAmount = envioEnabled ? shippingCost : 0;
 
-  const total = subtotal + shippingAmount;
+const shippingAmount = envioEnabled ? shippingCost : 0;
+
+const taxableBase = subtotal + shippingAmount;
+const ivaAmount = ivaEnabled
+  ? Math.round(taxableBase * IVA_RATE * 100) / 100
+  : 0;
+
+const total = taxableBase + ivaAmount;
 
   const fmt = (n: number) =>
     n.toLocaleString("es-MX", { style: "currency", currency: "MXN" });
@@ -441,6 +452,13 @@ export default function QuoteEditModal({
                 <span className="text-slate-500">Subtotal</span>
                 <span className="font-medium">{fmt(subtotal)}</span>
               </div>
+              
+            {ivaEnabled && (
+                <div className="flex justify-between">
+                  <span className="text-slate-500">IVA (16%)</span>
+                  <span>{fmt(ivaAmount)}</span>
+                </div>
+              )}
 
               {envioEnabled && (
                 <div className="flex justify-between">

@@ -11,6 +11,7 @@ import ClientSearchField, {
 } from "./ClientSearchField";
 
 const DEFAULT_COSTO_ENVIO = 500;
+const IVA_RATE = 0.16;
 
 interface LineItem {
   id: number;
@@ -30,6 +31,7 @@ export interface QuoteFormSavePayload {
   items: LineItem[];
   subtotal: number;
   iva: boolean;
+  ivaAmount: number;
   sending: boolean;
   shippingAmount: number;
   total: number;
@@ -380,12 +382,16 @@ export default function QuoteFormModal({
     return errors;
   }
 
-  const subtotal = items.reduce((acc, i) => acc + i.qty * i.price, 0);
-  
-  const shippingAmount = envioEnabled ? shippingCost : 0;
- 
-  const total = subtotal + shippingAmount;
-  const minAnticipo = total * 0.5;
+ const subtotal = items.reduce((acc, i) => acc + i.qty * i.price, 0);
+const shippingAmount = envioEnabled ? shippingCost : 0;
+
+const taxableBase = subtotal + shippingAmount;
+const ivaAmount = ivaEnabled
+  ? Math.round(taxableBase * IVA_RATE * 100) / 100
+  : 0;
+
+const total = taxableBase + ivaAmount;
+const minAnticipo = total * 0.5;
 
   const fmt = (n: number) =>
     n.toLocaleString("es-MX", { style: "currency", currency: "MXN" });
@@ -473,6 +479,7 @@ export default function QuoteFormModal({
         items,
         subtotal,
         iva: ivaEnabled,
+        ivaAmount, 
         sending: envioEnabled,
         shippingAmount,
         total,
@@ -623,6 +630,13 @@ export default function QuoteFormModal({
                   <span>{fmt(shippingAmount)}</span>
                 </div>
               )}
+
+              {ivaEnabled && (
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">IVA (16%)</span>
+                    <span>{fmt(ivaAmount)}</span>
+                  </div>
+                )}
 
               <div className="flex justify-between border-t border-slate-200 pt-2 font-medium">
                 <span>Total</span>
