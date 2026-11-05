@@ -39,40 +39,43 @@ export function InvoiceHistory({ invoices, actions, defaultEmail, onChanged }: P
     setTimeout(() => setCopied(null), 1500);
   };
 
-  const sendEmail = async (inv: Invoice) => {
-    const Swal = await getSwal();
-    const res = await Swal.fire<{ email: string; subject?: string }>({
-      title: `Enviar factura ${inv.folio ?? ""}`,
-      html: `
-        <div style="text-align:left;font-size:14px">
-          <label style="font-weight:600">Correo *</label>
-          <input id="snd-email" type="email" class="swal2-input" style="width:100%;margin:4px 0 10px" value="${defaultEmail ?? ""}" placeholder="cliente@correo.com" />
-          <label style="font-weight:600">Asunto</label>
-          <input id="snd-subject" class="swal2-input" style="width:100%;margin:4px 0 10px" placeholder="Factura ${inv.folio ?? ""}" />
-          
-        </div>`,
-      showCancelButton: true,
-      confirmButtonText: "Enviar",
-      cancelButtonText: "Cancelar",
-      confirmButtonColor: "#2563eb",
-        preConfirm: () => {
-        const popup = Swal.getPopup()!;
-        const email = (popup.querySelector("#snd-email") as HTMLInputElement).value.trim();
-        if (!isValidEmail(email)) {
-          Swal.showValidationMessage("Captura un correo válido");
-          return false;
-        }
-        const subject = (popup.querySelector("#snd-subject") as HTMLInputElement).value.trim() || undefined;
-        return { email, subject };
-      },
-    });
-    if (!res.isConfirmed || !res.value) return;
-    const payload = res.value;
-    await run(`send-${inv.id}`, async () => {
-      const r = await actions.send(inv.id, payload);
-      await toast("success", r.message);
-    });
-  };
+const sendEmail = async (inv: Invoice) => {
+  const Swal = await getSwal();
+  const res = await Swal.fire<{ email: string; subject?: string }>({
+    title: `Enviar factura ${inv.folio ?? ""}`,
+    html: `
+      <div style="text-align:left;font-size:14px">
+        <label style="font-weight:600">Correo *</label>
+        <input id="snd-email" type="email" class="swal2-input" style="width:100%;margin:4px 0 10px" placeholder="cliente@correo.com" />
+        <label style="font-weight:600">Asunto</label>
+        <input id="snd-subject" class="swal2-input" style="width:100%;margin:4px 0 10px" placeholder="Factura ${inv.folio ?? ""}" />
+      </div>`,
+    didOpen: () => {
+      const input = Swal.getPopup()?.querySelector("#snd-email") as HTMLInputElement | null;
+      if (input && defaultEmail) input.value = defaultEmail;
+    },
+    showCancelButton: true,
+    confirmButtonText: "Enviar",
+    cancelButtonText: "Cancelar",
+    confirmButtonColor: "#2563eb",
+    preConfirm: () => {
+      const popup = Swal.getPopup()!;
+      const email = (popup.querySelector("#snd-email") as HTMLInputElement).value.trim();
+      if (!isValidEmail(email)) {
+        Swal.showValidationMessage("Captura un correo válido");
+        return false;
+      }
+      const subject = (popup.querySelector("#snd-subject") as HTMLInputElement).value.trim() || undefined;
+      return { email, subject };
+    },
+  });
+  if (!res.isConfirmed || !res.value) return;
+  const payload = res.value;
+  await run(`send-${inv.id}`, async () => {
+    const r = await actions.send(inv.id, payload);
+    await toast("success", r.message);
+  });
+};
 
   if (invoices.length === 0) {
     return (
