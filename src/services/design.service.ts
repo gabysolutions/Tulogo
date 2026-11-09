@@ -17,6 +17,11 @@ DesignsPagination,
 } from "../types/design";
 export type { GetDesignsParams };
 
+const buildClientName = (parts: { name: string; paternalLastName: string; maternalLastName: string }) =>
+  [parts.name, parts.paternalLastName, parts.maternalLastName]
+    .map((s) => s?.trim())
+    .filter((s) => s && s !== ".")
+    .join(" ");
 
 function mapDetail(dto: DesignDetailDTO): DesignDetail {
   return {
@@ -42,10 +47,7 @@ function mapDesignById(dto: GetDesignByIdDTO): DesignById {
     designerName: dto.designer,
     deliveryDate: dto.delivery_date,
     clientId: dto.clientId,
-    clientName: [dto.name, dto.paternalLastName, dto.maternalLastName]
-      .map((s) => s?.trim())
-      .filter((s) => s && s !== ".")
-      .join(" "),
+    clientName: buildClientName(dto),
     clientPhone: dto.phone,
     status: dto.status,
     details: dto.details.map(mapDetailById),
@@ -73,11 +75,14 @@ function mapDetailById(dto: DesignDetailByIdDTO): DesignDetailById {
 
 function mapDesign(dto: DesignDTO): Design {
   return {
-    id: dto.id,
+      id: dto.id,
     quoteId: dto.quoteId,
     designerId: dto.designerId ?? null,
     designerName: dto.designer,
     deliveryDate: dto.delivery_date,
+    clientId: dto.clientId,
+    clientName: buildClientName(dto),
+    clientPhone: dto.phone,
     status: dto.status as Design["status"],
     details: dto.details.map(mapDetail),
   };

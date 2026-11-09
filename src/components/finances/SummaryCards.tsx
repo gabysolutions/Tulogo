@@ -10,6 +10,7 @@ interface Props {
 }
 
 export function SummaryCards({ utility, payments, expenses, month }: Props) {
+   const margin = payments > 0 ? Math.round((utility / payments) * 100) : 0;
   return (
     <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       <Card
@@ -33,10 +34,10 @@ export function SummaryCards({ utility, payments, expenses, month }: Props) {
         note="Gastos registrados"
         tone="danger"
       />
-      <Card
+       <Card
         icon={<Scale className="size-5" />}
-        value={money(utility)}
-        title="Balance"
+        value={`${margin}%`}
+        title="Margen de utilidad"
         note={`Periodo: ${monthLabel(month)}`}
       />
     </section>

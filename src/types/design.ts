@@ -68,6 +68,11 @@ export interface DesignDTO {
   designerId?: number | null;
   designer: string;
   delivery_date: string;
+  clientId: number;
+  name: string;
+  paternalLastName: string;
+  maternalLastName: string;
+  phone: string;
   status: number;
   details: DesignDetailDTO[];
 }
@@ -82,6 +87,7 @@ export interface DesignStatusCountsDTO {
 export interface MyDesignsResponseDTO {
   designs: DesignDTO[];
   statusCounts: DesignStatusCountsDTO;
+   pagination: DesignsPagination;
 }
 
 export interface DesignMovementDTO {
@@ -117,6 +123,9 @@ export interface Design {
   designerId: number | null;
   designerName: string;
   deliveryDate: string;
+  clientId: number;
+  clientName: string;
+  clientPhone: string;
   status: DesignStatus;
   details: DesignDetail[];
 }

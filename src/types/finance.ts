@@ -38,6 +38,7 @@ export interface MonthlyExpenses {
 
 export interface CurrentMovement {
   id: number;
+  type: "quote" | "sale" | "expense";  
   amount: number;
   payment_method: PaymentMethod;
   registration_date: string;

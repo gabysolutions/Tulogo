@@ -718,6 +718,9 @@ export default function DesignDetailPage() {
 
       <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
         <div className="min-w-0">
+          <p className="text-lg font-bold text-blue-600">
+            {design.clientName}
+          </p>
           <p className="text-sm font-semibold tracking-tight text-slate-500">
             COT-{String(design.quoteId).padStart(4, "0")}
           </p>

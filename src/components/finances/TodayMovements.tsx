@@ -23,7 +23,7 @@ export function TodayMovements({ currentDay }: Props) {
 
           return (
             <li
-              key={`${m.id}-${m.registration_date}-${m.amount}`}
+              key={`${m.type}-${m.id}`}
               className="flex items-start gap-3"
             >
               <span

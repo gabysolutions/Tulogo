@@ -30,6 +30,10 @@ export function DesignCard({ design }: { design: Design }) {
       <div className="flex flex-1 flex-col gap-3 p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
+            <p className="text-lg font-bold text-blue-600">
+              
+               {design.clientName}
+            </p>
             <p className="text-sm font-semibold tracking-tight text-slate-800">
               COT-{String(design.quoteId).padStart(4, "0")}
             </p>
