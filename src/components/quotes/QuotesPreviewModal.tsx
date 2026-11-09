@@ -6,6 +6,7 @@ import { getQuotePdf,createQuoteShareLink } from "../../services/quote.service";
 import { EMOJI, openWhatsApp } from "../../lib/whatsapp";
 import { SendPaymentInfoButton } from "../quotes/Sendpaymentinfobutton";
 
+
 interface Props {
   quote: Quote | null;
   onClose: () => void;

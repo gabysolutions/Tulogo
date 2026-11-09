@@ -24,6 +24,7 @@ import ProductionDetail from "../components/production/ProductionDetail";
 import HistoryPayments from "../pages/payments/HistoryPayments";
 import PublicLayout from "../layouts/PublicLayout";
 import PublicOrderForm from "../pages/public/PublicOrderForm";
+import Sale from "../pages/sale/Sale";
 
 export const AppRoutes = () => {
   return (
@@ -90,7 +91,14 @@ export const AppRoutes = () => {
             <Route element={<RequirePermission perm={PERMISSIONS.PAYMENTS} />}>
               <Route path="/pagos" element={<HistoryPayments />} />
             </Route>
+
+            <Route element={<RequirePermission perm={PERMISSIONS.SALE} />}>
+              <Route path="/venta" element={<Sale />} />
+            </Route>
           </Route>
+
+          
+            
 
 
         </Route>

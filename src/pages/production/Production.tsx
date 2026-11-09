@@ -66,11 +66,11 @@ useEffect(() => {
 
   const [sort, setSort] = useState<SortKey>("delivery");
 
-  // Dialog de estado
+
   const [statusOrder, setStatusOrder] = useState<ProductionOrderListItem | null>(null);
   const [statusOpen, setStatusOpen] = useState(false);
 
-  // Historial
+
   const [historyOrder, setHistoryOrder] = useState<ProductionOrderListItem | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
   const {
@@ -79,10 +79,10 @@ useEffect(() => {
     error: historyError,
   } = useOrderMovements(historyOrder?.id, historyOpen);
 
-  // PDF de la orden (GET /order/:id/PDF)
+ 
   const { openPdf, loadingId: printingId } = useOrderPdf();
 
-  // Ordenamiento local (solo sobre la página cargada; el API no soporta sort)
+ 
   const sortedOrders = useMemo(() => {
     const list = [...orders];
     list.sort((a, b) => {

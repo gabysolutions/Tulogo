@@ -5,7 +5,11 @@ export const PaymentMethod = {
 
 export type PaymentMethod = (typeof PaymentMethod)[keyof typeof PaymentMethod];
 
-
+export interface PaymentRef {
+  id: number;
+  type: PaymentSource;
+}
+export type PaymentSource = "quote" | "sale";
 
 export interface QuotePayment {
   id: number;
@@ -29,12 +33,14 @@ export interface PaymentPayload {
 
 export interface Payment {
   id: number;
-  quoteId: number;
+  type: PaymentSource;
+  documentId: number;
+  quoteId: number | null; 
   amount: number;
-  payment_method: PaymentMethod;
-  registration_date: string; 
+  payment_method: string;
+  registration_date: string;
   register_user: string;
-  status: number; 
+  status: number;
 }
 
 export interface PaymentPagination {
@@ -51,9 +57,12 @@ export interface PaymentsResponse {
 }
 
 export interface PaymentFilters {
-  status?: number; 
-  initialDate?: string; 
-  finalDate?: string; 
-  quoteId?: number;
+  status?: number;
+  initialDate?: string;
+  finalDate?: string;
+  type?: PaymentSource;
+  documentId?: number;
+  quoteId?: number; 
   page?: number;
+  order?: "asc" | "desc";
 }

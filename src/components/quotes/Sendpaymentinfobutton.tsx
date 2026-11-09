@@ -13,9 +13,10 @@ const PAYMENT_INFO = {
 interface SendPaymentInfoButtonProps {
   phone?: string;
   folio: string;
+  label?: string; 
 }
 
-export function SendPaymentInfoButton({ phone, folio }: SendPaymentInfoButtonProps) {
+export function SendPaymentInfoButton({ phone, folio , label = "pedido"}: SendPaymentInfoButtonProps) {
   const handleClick = () => {
     const message = [
       `${EMOJI.card} *Te comparto los datos de pago:*`,
@@ -24,7 +25,7 @@ export function SendPaymentInfoButton({ phone, folio }: SendPaymentInfoButtonPro
       `${EMOJI.number} *CLABE interbancaria:* ${PAYMENT_INFO.clabe}`,
       `${EMOJI.card} *Tarjeta:* ${PAYMENT_INFO.card}`,
       ``,
-      `${EMOJI.check} Una vez realizado el pago, envíanos tu comprobante por este medio para confirmar tu pedido ${folio}.`,
+      `${EMOJI.check} Una vez realizado el pago, envíanos tu comprobante por este medio para confirmar tu ${label} ${folio}.`,,
     ].join("\n");
 
     openWhatsApp(phone, message);

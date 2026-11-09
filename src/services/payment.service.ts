@@ -6,6 +6,7 @@ import type {
   Payment,
   PaymentFilters,
   PaymentsResponse,
+  PaymentSource,
 } from "../types/payment";
 
 interface QuotePaymentDTO {
@@ -56,13 +57,23 @@ async function getPayments(filters: PaymentFilters): Promise<PaymentsResponse> {
   return data;
 }
 
-async function getPaymentById(id: number): Promise<Payment> {
-  const { data } = await http.get<Payment>(`/payment/${id}`);
+async function getPaymentById(
+  id: number,
+  type: PaymentSource = "quote"
+): Promise<Payment> {
+  const { data } = await http.get<Payment>(`/payment/${id}`, { params: { type } });
   return data;
 }
 
-async function cancelPayment(id: number): Promise<MessageResponse> {
-  const { data } = await http.delete<MessageResponse>(`/payment/${id}`);
+
+
+async function cancelPayment(
+  id: number,
+  type: PaymentSource = "quote"
+): Promise<MessageResponse> {
+  const { data } = await http.delete<MessageResponse>(`/payment/${id}`, {
+    params: { type },
+  });
   return data;
 }
 

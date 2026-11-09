@@ -1,4 +1,4 @@
-// hooks/useArticleCatalog.ts
+
 import { useState, useCallback, useEffect } from "react";
 import { getArticles } from "../services/article.service";
 import type { ArticleListItem } from "../types/inventory";

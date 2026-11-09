@@ -17,7 +17,7 @@ import {
   CalendarSearch,
   FileText,
   LogOut,
-  Users,Banknote
+  Users,Banknote,ShoppingCart
 } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
@@ -33,6 +33,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { label: "Dashboard", to: "/", icon: LayoutDashboard },
+  { label: "Venta", to: "/venta", icon: ShoppingCart, perm: PERMISSIONS.SALE },
   { label: "Cotizaciones", to: "/cotizaciones", icon: ClipboardList, perm: PERMISSIONS.QUOTATIONS },
   { label: "Calendario", to: "/calendario", icon: CalendarSearch, perm: PERMISSIONS.CALENDAR },
   { label: "Diseños", to: "/diseños", icon: Palette, perm: PERMISSIONS.DESIGN },

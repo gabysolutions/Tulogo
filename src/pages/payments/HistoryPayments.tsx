@@ -7,36 +7,37 @@ import { PaymentsSummary } from "../../components/payments/PaymentsSummary";
 import { PaymentsTable } from "../../components/payments/PaymentsTable";
 import { PaymentPagination } from "../../components/payments/PaymentPagination";
 import { PaymentDetailDialog } from "../../components/payments/PaymentDetailDialog";
+import type { PaymentRef } from "../../types/payment";
 import Swal from "sweetalert2";
 
 export default function HistoryPayments() {
   const { filters, updateFilters, resetFilters, data, loading, error, reload } = usePayments();
-  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [selected, setSelected] = useState<PaymentRef | null>(null);
   const [feedback, setFeedback] = useState<{ ok: boolean; text: string } | null>(null);
 
-const handleCancel = async (id: number) => {
-  const result = await Swal.fire({
-    title: "¿Cancelar este pago?",
-    text: "Esta acción no se puede deshacer.",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonColor: "#d33",
-    cancelButtonColor: "#6b7280",
-    confirmButtonText: "Sí, cancelar pago",
-    cancelButtonText: "No, volver",
-  });
+  const handleCancel = async ({ id, type }: PaymentRef) => {
+    const result = await Swal.fire({
+      title: "¿Cancelar este pago?",
+      text: "Esta acción no se puede deshacer.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Sí, cancelar pago",
+      cancelButtonText: "No, volver",
+    });
 
-  if (!result.isConfirmed) return;
+    if (!result.isConfirmed) return;
 
-  try {
-    const res = await paymentService.cancelPayment(id);
-    setFeedback({ ok: true, text: res.message });
-    setSelectedId(null);
-    reload();
-  } catch {
-    setFeedback({ ok: false, text: "No se pudo cancelar el pago." });
-  }
-};
+    try {
+      const res = await paymentService.cancelPayment(id, type);
+      setFeedback({ ok: true, text: res.message });
+      setSelected(null);
+      reload();
+    } catch {
+      setFeedback({ ok: false, text: "No se pudo cancelar el pago." });
+    }
+  };
 
   return (
     <main className="finance-theme min-h-screen bg-background px-4 py-8 sm:px-6 lg:px-10">
@@ -71,7 +72,7 @@ const handleCancel = async (id: number) => {
             <PaymentsSummary payments={data.payments} total={data.pagination.total} />
             <PaymentsTable
               payments={data.payments}
-              onView={setSelectedId}
+              onView={setSelected}
               onCancel={handleCancel}
             />
             <PaymentPagination
@@ -83,8 +84,8 @@ const handleCancel = async (id: number) => {
       </div>
 
       <PaymentDetailDialog
-        paymentId={selectedId}
-        onClose={() => setSelectedId(null)}
+        payment={selected}
+        onClose={() => setSelected(null)}
         onCancel={handleCancel}
       />
     </main>

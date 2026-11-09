@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Ban, PiggyBank, Receipt } from "lucide-react";
-import type { Payment } from "../../types/finance";
+import type { Payment } from "../../types/payment";
 import { money } from "../../utils/format";
 
 interface Props {
@@ -9,9 +9,10 @@ interface Props {
 }
 
 export function PaymentsSummary({ payments, total }: Props) {
-  const collected = payments.filter((p) => p.status === 1).reduce((sum, p) => sum + p.amount, 0);
-  const cancelled = payments.filter((p) => p.status !== 1).length;
-
+  const collected = payments
+    .filter((p) => Number(p.status) === 1)
+    .reduce((sum, p) => sum + Number(p.amount), 0);
+  const cancelled = payments.filter((p) => Number(p.status) !== 1).length;
   return (
     <section className="grid gap-4 sm:grid-cols-3">
       <Card

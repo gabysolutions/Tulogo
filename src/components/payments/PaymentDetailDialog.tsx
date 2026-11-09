@@ -2,8 +2,9 @@ import { useEffect, useState, type ButtonHTMLAttributes, type ReactNode } from "
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { paymentService } from "../../services/payment.service";
-import type { Payment } from "../../types/finance";
+import type { Payment, PaymentRef } from "../../types/payment";
 import { money, shortDateTime } from "../../utils/format";
+import { folioFromId } from "../../utils/folio";
 
 /* ───────────────────────── UI local (Tailwind) ───────────────────────── */
 
@@ -43,31 +44,34 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
 /* ───────────────────────── PaymentDetailDialog ───────────────────────── */
 
 interface Props {
-  paymentId: number | null; // null = cerrado
+  payment: PaymentRef | null; // null = cerrado
   onClose: () => void;
-  onCancel: (id: number) => void;
+  onCancel: (ref: PaymentRef) => void;
 }
 
-export function PaymentDetailDialog({ paymentId, onClose, onCancel }: Props) {
-  const [payment, setPayment] = useState<Payment | null>(null);
+export function PaymentDetailDialog({ payment, onClose, onCancel }: Props) {
+  const [detail, setDetail] = useState<Payment | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const paymentId = payment?.id ?? null;
+  const paymentType = payment?.type ?? null;
+
   useEffect(() => {
-    if (paymentId === null) return;
+    if (paymentId === null || paymentType === null) return;
     let active = true;
-    setPayment(null);
+    setDetail(null);
     setError("");
     setLoading(true);
     paymentService
-      .getPaymentById(paymentId)
-      .then((res) => active && setPayment(res))
+      .getPaymentById(paymentId, paymentType)
+      .then((res) => active && setDetail(res))
       .catch(() => active && setError("No se pudo cargar el pago."))
       .finally(() => active && setLoading(false));
     return () => {
       active = false;
     };
-  }, [paymentId]);
+  }, [paymentId, paymentType]);
 
   useEffect(() => {
     if (paymentId === null) return;
@@ -83,9 +87,10 @@ export function PaymentDetailDialog({ paymentId, onClose, onCancel }: Props) {
     };
   }, [paymentId, onClose]);
 
-  if (paymentId === null) return null;
+  if (payment === null) return null;
 
-  const active = payment?.status === 1;
+  const active = Number(detail?.status) === 1;
+  const isSale = detail?.type === "sale";
 
   return createPortal(
     <div className="finance-theme fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -96,7 +101,7 @@ export function PaymentDetailDialog({ paymentId, onClose, onCancel }: Props) {
         className="relative z-10 grid w-full max-w-md gap-4 rounded-xl border bg-card p-6 shadow-xl"
       >
         <div className="pr-6">
-          <h2 className="text-lg font-semibold">Detalle del pago #{paymentId}</h2>
+          <h2 className="text-lg font-semibold">Detalle del pago #{payment.id}</h2>
           <p className="text-sm text-muted-foreground">Información registrada del pago.</p>
         </div>
 
@@ -112,11 +117,11 @@ export function PaymentDetailDialog({ paymentId, onClose, onCancel }: Props) {
         {loading && <p className="text-sm text-muted-foreground">Cargando…</p>}
         {error && <p className="text-sm text-danger">{error}</p>}
 
-        {payment && (
+        {detail && (
           <dl className="grid grid-cols-2 gap-4 text-sm">
             <Field label="Monto">
               <span className={active ? "text-success" : "text-muted-foreground line-through"}>
-                {money(payment.amount)}
+                {money(detail.amount)}
               </span>
             </Field>
             <Field label="Estado">
@@ -129,19 +134,24 @@ export function PaymentDetailDialog({ paymentId, onClose, onCancel }: Props) {
                 {active ? "Activo" : "Cancelado"}
               </span>
             </Field>
-            <Field label="Cotización">#{payment.quoteId}</Field>
-            <Field label="Método de pago">
-              <span className="capitalize">{payment.payment_method}</span>
+            <Field label={isSale ? "Venta" : "Cotización"}>
+              {isSale ? folioFromId(detail.documentId) : `#${detail.documentId}`}
             </Field>
-            <Field label="Fecha de registro">{shortDateTime(payment.registration_date)}</Field>
-            <Field label="Registrado por">{payment.register_user}</Field>
+            <Field label="Método de pago">
+              <span className="capitalize">{detail.payment_method}</span>
+            </Field>
+            <Field label="Fecha de registro">{shortDateTime(detail.registration_date)}</Field>
+            <Field label="Registrado por">{detail.register_user}</Field>
           </dl>
         )}
 
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <Button onClick={onClose}>Cerrar</Button>
-          {active && (
-            <Button variant="danger" onClick={() => onCancel(payment!.id)}>
+          {detail && active && (
+            <Button
+              variant="danger"
+              onClick={() => onCancel({ id: detail.id, type: detail.type })}
+            >
               Cancelar pago
             </Button>
           )}
