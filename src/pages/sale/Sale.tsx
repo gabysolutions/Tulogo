@@ -29,7 +29,7 @@ export default function SalePage() {
     pagination,
     loading,
     error,
-    page,
+  
     setPage,
     search,
     setSearch,
