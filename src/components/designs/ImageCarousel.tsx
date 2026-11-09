@@ -6,7 +6,7 @@ interface Props {
   alt: string;
   emptyTitle: string;
   emptyIcon: React.ReactNode;
-  emptyAction: string;
+  emptyAction?: string;
   onEmptyAction?: () => void;
   onOpen?: (index: number) => void;
   onDelete?: (index: number) => void;
@@ -44,11 +44,12 @@ export function ImageCarousel({
     }
   }, [images.length, index]);
 
-  if (images.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center">
-        <div className="text-slate-400">{emptyIcon}</div>
-        <p className="text-sm text-slate-500">{emptyTitle}</p>
+if (images.length === 0) {
+  return (
+    <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center">
+      <div className="text-slate-400">{emptyIcon}</div>
+      <p className="text-sm text-slate-500">{emptyTitle}</p>
+      {emptyAction && onEmptyAction && (
         <button
           type="button"
           onClick={onEmptyAction}
@@ -56,9 +57,10 @@ export function ImageCarousel({
         >
           {emptyAction}
         </button>
-      </div>
-    );
-  }
+      )}
+    </div>
+  );
+}
 
   const prev = () => setIndex((i) => (i - 1 + images.length) % images.length);
   const next = () => setIndex((i) => (i + 1) % images.length);

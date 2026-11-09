@@ -118,7 +118,7 @@ export default function ClientSearchField({
   };
 
   const handlePhoneChange = (raw: string) => {
-    // Solo dígitos, máximo 10
+   
     const digitsOnly = raw.replace(/\D/g, "").slice(0, 10);
     onNewClientDataChange({
       ...newClientData,

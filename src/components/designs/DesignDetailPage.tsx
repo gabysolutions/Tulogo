@@ -23,11 +23,11 @@ import { useAuth } from "../../context/AuthContext";
 import { useDesign } from "../../hooks/useDesign";
 import {
   DesignStatus,
+  DesignDetailStatus,
   type DesignDetailById,
   type DesignComment,
 } from "../../types/design";
 import {
-  addFileReferenceService,
   assignDesignerService,
   claimDesignService,
   acceptDesignDetailService,
@@ -38,8 +38,7 @@ import {
   uploadDesignImgService,
   getAvailableDesignersService,
 } from "../../services/design.service";
-import { deleteFileService } from "../../services/file.service";
-import { uploadManyToCloudinary, uploadToCloudinary } from "../../lib/cloudinary";
+import { uploadToCloudinary } from "../../lib/cloudinary";
 
 import { ImageCarousel } from "../../components/designs/ImageCarousel";
 import { Lightbox } from "../../components/designs/Lightbox";
@@ -56,21 +55,21 @@ const toast = Swal.mixin({
 });
 
 const STEPS = [
-  { key: "refs", label: "Referencias", icon: FileImage },
   { key: "design", label: "Diseño", icon: Palette },
   { key: "review", label: "Revisión", icon: Eye },
   { key: "final", label: "Resultado", icon: CheckCircle2 },
 ];
 
 function stepProgress(status: DesignStatus, hasProposal: boolean) {
-  if (status === DesignStatus.APPROVED || status === DesignStatus.REJECTED) return 4;
-  if (status === DesignStatus.REVIEW) return 3;
-  if (hasProposal) return 2;
+  if (status === DesignStatus.APPROVED || status === DesignStatus.REJECTED) return 3;
+  if (status === DesignStatus.REVIEW) return 2;
+  if (hasProposal) return 1;
   return 0;
 }
 
+// El backend exige equipo y tipo de impresión en cada detalle para enviar a revisión.
 function isDetailComplete(detail: DesignDetailById): boolean {
-  return Boolean(detail.teamName?.trim());
+  return Boolean(detail.teamName?.trim()) && Boolean(detail.printerType?.trim());
 }
 
 function Track({ status, hasProposal }: { status: DesignStatus; hasProposal: boolean }) {
@@ -209,20 +208,6 @@ async function confirmReject(): Promise<string | null> {
   return value ?? null;
 }
 
-async function confirmDeleteReference(): Promise<boolean> {
-  const result = await Swal.fire({
-    title: "¿Eliminar esta referencia?",
-    text: "Podrás subir una nueva en su lugar.",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonText: "Eliminar",
-    cancelButtonText: "Cancelar",
-    confirmButtonColor: "#dc2626",
-    cancelButtonColor: "#94a3b8",
-  });
-  return result.isConfirmed;
-}
-
 async function confirmDeleteProposal(): Promise<boolean> {
   const result = await Swal.fire({
     title: "¿Quitar esta propuesta?",
@@ -278,12 +263,10 @@ export default function DesignDetailPage() {
   const [activeDetailId, setActiveDetailId] = useState<number | undefined>(undefined);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
-  const [uploadingRef, setUploadingRef] = useState(false);
   const [uploadingProposal, setUploadingProposal] = useState(false);
   const [busy, setBusy] = useState(false);
   const [lightbox, setLightbox] = useState<{ images: string[]; index: number; title: string } | null>(null);
 
-  const referenceInputRef = useRef<HTMLInputElement>(null);
   const proposalInputRef = useRef<HTMLInputElement>(null);
 
   const soon = (label: string) => toast.fire({ icon: "info", title: label });
@@ -325,12 +308,20 @@ export default function DesignDetailPage() {
 
   const references = activeDetail.files.map((f) => f.url);
   const proposal = activeDetail.designImg ? [activeDetail.designImg] : [];
-  const allDetailsComplete = details.every(isDetailComplete);
-  const allHaveReferences = details.every((d) => d.files.length > 0);
-  const canSendToReview = allHaveReferences && allDetailsComplete;
 
-  const canDeleteReferences =
-    design.status === DesignStatus.PENDING || design.status === DesignStatus.REJECTED;
+  // Las referencias del cliente son opcionales: solo se exige el detalle completo
+  // y una propuesta vigente (no rechazada) en cada artículo.
+  const allDetailsComplete = details.every(isDetailComplete);
+  const allHaveProposal = details.every(
+    (d) => Boolean(d.designImg) && d.status !== DesignDetailStatus.REJECTED
+  );
+  const canSendToReview = allDetailsComplete && allHaveProposal;
+
+  const sendToReviewHint = canSendToReview
+    ? "Enviar este diseño a revisión"
+    : !allDetailsComplete
+    ? "Completa el detalle de cada artículo (equipo y tipo de impresión)"
+    : "Sube o reemplaza la propuesta de diseño de cada artículo";
 
   // La propuesta se puede quitar/reemplazar también en PENDING (antes de enviar a revisión).
   const canDeleteProposal =
@@ -339,42 +330,6 @@ export default function DesignDetailPage() {
     (design.status === DesignStatus.PENDING ||
       design.status === DesignStatus.REVIEW ||
       design.status === DesignStatus.REJECTED);
-
-  const handleUploadReferences = async (fileList: FileList | null) => {
-    if (!fileList || fileList.length === 0) return;
-    setUploadingRef(true);
-    try {
-      const uploaded = await uploadManyToCloudinary(Array.from(fileList));
-      for (const result of uploaded) {
-        await addFileReferenceService(activeDetail.id, { url: result.url });
-      }
-      toast.fire({ icon: "success", title: "Referencias subidas" });
-      refetch();
-    } catch (err) {
-      toast.fire({ icon: "error", title: err instanceof Error ? err.message : "Error al subir referencias" });
-    } finally {
-      setUploadingRef(false);
-    }
-  };
-
-  const handleDeleteReference = async (index: number) => {
-    const file = activeDetail.files[index];
-    if (!file) return;
-
-    const confirmed = await confirmDeleteReference();
-    if (!confirmed) return;
-
-    setBusy(true);
-    try {
-      const res = await deleteFileService(file.id);
-      toast.fire({ icon: "success", title: res.message });
-      refetch();
-    } catch (err: any) {
-      toast.fire({ icon: "error", title: err?.response?.data?.message ?? "No se pudo eliminar la referencia" });
-    } finally {
-      setBusy(false);
-    }
-  };
 
   const handleUploadProposal = async (fileList: FileList | null) => {
     if (!fileList || fileList.length === 0) return;
@@ -514,15 +469,6 @@ export default function DesignDetailPage() {
     if (design.status === DesignStatus.PENDING) {
       return (
         <>
-          <button
-            onClick={() => referenceInputRef.current?.click()}
-            disabled={uploadingRef}
-            className="flex items-center gap-1.5 rounded-lg bg-slate-800 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            <Upload size={16} />
-            {uploadingRef ? "Subiendo..." : "Subir Referencias"}
-          </button>
-
           {design.designerId ? (
             !isDesigner && (
               <button
@@ -578,11 +524,7 @@ export default function DesignDetailPage() {
           <button
             onClick={handleSendToReview}
             disabled={!canSendToReview || busy}
-            title={
-              canSendToReview
-                ? "Enviar este diseño a revisión"
-                : "Sube al menos una referencia por artículo y completa el detalle (equipo, colores, logo) para poder enviarlo a revisión"
-            }
+            title={sendToReviewHint}
             className="flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400"
           >
             <Send size={16} /> Enviar a Revisión
@@ -606,11 +548,7 @@ export default function DesignDetailPage() {
           <button
             onClick={handleSendToReview}
             disabled={!canSendToReview || busy}
-            title={
-              canSendToReview
-                ? "Enviar este diseño a revisión"
-                : "Sube al menos una referencia por artículo y completa el detalle (equipo, colores, logo) para poder enviarlo a revisión"
-            }
+            title={sendToReviewHint}
             className="flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400"
           >
             <Send size={16} /> Enviar a Revisión
@@ -692,18 +630,6 @@ export default function DesignDetailPage() {
         <ArrowLeft size={16} /> Volver a Diseños
       </button>
 
-      <input
-        ref={referenceInputRef}
-        type="file"
-        accept="image/*"
-        multiple
-        disabled={uploadingRef}
-        className="hidden"
-        onChange={(e) => {
-          handleUploadReferences(e.target.files);
-          e.target.value = "";
-        }}
-      />
       <input
         ref={proposalInputRef}
         type="file"
@@ -788,7 +714,7 @@ export default function DesignDetailPage() {
 
       {design.status === DesignStatus.PENDING && !canSendToReview && (
         <p className="mt-4 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">
-          Sube al menos una referencia por artículo y completa el detalle (equipo, colores y logo principal) para poder enviarlo a revisión.
+          {sendToReviewHint}.
         </p>
       )}
 
@@ -796,23 +722,22 @@ export default function DesignDetailPage() {
         <CommentsSection comments={activeDetail.comments ?? []} />
       )}
 
-      <div className="mt-8 grid grid-cols-1 gap-8 sm:grid-cols-2">
-        <section className="space-y-2">
-          <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-            Referencias del Cliente
-          </h3>
-          <ImageCarousel
-            images={references}
-            alt={`Referencia de ${activeDetail.teamName ?? ""}`}
-            emptyTitle="No hay referencias cargadas"
-            emptyIcon={<FileImage className="h-6 w-6" />}
-            emptyAction="Subir Referencias"
-            onEmptyAction={() => referenceInputRef.current?.click()}
-            onOpen={(index) => setLightbox({ images: references, index, title: "Referencias del cliente" })}
-            onDelete={canDeleteReferences ? handleDeleteReference : undefined}
-            autoPlay
-          />
-        </section>
+      <div className={`mt-8 grid grid-cols-1 gap-8 ${references.length > 0 ? "sm:grid-cols-2" : ""}`}>
+        {references.length > 0 && (
+          <section className="space-y-2">
+            <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Referencias del Cliente
+            </h3>
+            <ImageCarousel
+              images={references}
+              alt={`Referencia de ${activeDetail.teamName ?? ""}`}
+              emptyTitle="No hay referencias cargadas"
+              emptyIcon={<FileImage className="h-6 w-6" />}
+              onOpen={(index) => setLightbox({ images: references, index, title: "Referencias del cliente" })}
+              autoPlay
+            />
+          </section>
+        )}
 
         <section className="space-y-2">
           <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
