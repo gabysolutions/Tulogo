@@ -8,6 +8,7 @@ export const EMOJI = {
   number: String.fromCodePoint(0x1f522), // 🔢
   check: String.fromCodePoint(0x2705), // ✅
   thanks: String.fromCodePoint(0x1f64c), // 🙌
+  user: String.fromCodePoint(0x1f464), // 👤
 };
 
 

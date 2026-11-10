@@ -36,6 +36,9 @@ export interface Payment {
   type: PaymentSource;
   documentId: number;
   quoteId: number | null; 
+  saleId: number | null;
+  client_id: number;
+  client_name: string;
   amount: number;
   payment_method: string;
   registration_date: string;
@@ -62,6 +65,7 @@ export interface PaymentFilters {
   finalDate?: string;
   type?: PaymentSource;
   documentId?: number;
+  saleId?: number;
   quoteId?: number; 
   page?: number;
   order?: "asc" | "desc";

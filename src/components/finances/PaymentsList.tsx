@@ -149,6 +149,9 @@ const pageItems = visible.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAG
                   )}
                 </div>
                 <p className="truncate text-sm text-muted-foreground capitalize">
+                  {p.client_name}
+                </p>
+                <p className="truncate text-sm text-muted-foreground capitalize">
                   {p.payment_method} · {p.register_user}
                 </p>
               </div>

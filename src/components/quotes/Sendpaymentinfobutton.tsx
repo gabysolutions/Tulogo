@@ -7,6 +7,7 @@ import { EMOJI, openWhatsApp } from "../../lib/whatsapp";
 const PAYMENT_INFO = {
   clabe: "002744701301102053",
   card: "5204 1604 1857 0284",
+  name:"JAIME ELIAS SAHAROPULOS SKAFTASON",
   bank: "CITIBANAMEX",
 };
 
@@ -24,6 +25,7 @@ export function SendPaymentInfoButton({ phone, folio , label = "pedido"}: SendPa
       `${EMOJI.bank} *Banco:* ${PAYMENT_INFO.bank}`,
       `${EMOJI.number} *CLABE interbancaria:* ${PAYMENT_INFO.clabe}`,
       `${EMOJI.card} *Tarjeta:* ${PAYMENT_INFO.card}`,
+      `${EMOJI.user} *Nombre:* ${PAYMENT_INFO.name}`,
       ``,
       `${EMOJI.check} Una vez realizado el pago, envíanos tu comprobante por este medio para confirmar tu ${label} ${folio}.`,,
     ].join("\n");

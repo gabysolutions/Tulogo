@@ -48,7 +48,8 @@ export function PaymentsTable({ payments, onView, onCancel }: Props) {
           <thead>
             <tr className="border-b text-xs text-muted-foreground">
               <th className="px-5 py-3 font-medium">Fecha</th>
-              <th className="px-5 py-3 font-medium">Documento</th>
+              <th className="px-5 py-3 font-medium">Tipo de pago</th>
+              <th className="px-5 py-3 font-medium">Cliente</th>
               <th className="px-5 py-3 font-medium">Método</th>
               <th className="px-5 py-3 font-medium">Registrado por</th>
               <th className="px-5 py-3 text-right font-medium">Monto</th>
@@ -81,7 +82,8 @@ export function PaymentsTable({ payments, onView, onCancel }: Props) {
                       </span>
                     </div>
                   </td>
-                  <td className="px-5 py-3 capitalize">{p.payment_method}</td>
+                  <td className="px-5 py-3">{p.client_name}</td>
+                  <td className="px-5 py-3 capitalize">{p.payment_method.toLowerCase()}</td>
                   <td className="px-5 py-3">{p.register_user}</td>
                   <td
                     className={cn(
