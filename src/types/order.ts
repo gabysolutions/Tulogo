@@ -259,6 +259,7 @@ export interface UpdateOrderDetailPayload {
   number?: string;
   size: OrderSize;
   gender: OrderGender;
+  observation?: string;
 }
 
 export interface UpdateOrderStatusPayload {

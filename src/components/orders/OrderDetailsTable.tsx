@@ -43,6 +43,7 @@ const EMPTY_EDIT_FORM = {
   number: "",
   size: "" as OrderSize | "",
   gender: "" as OrderGender | "",
+  observation: "",
 };
 
 export default function OrderDetailsTable({ order, onAddDetail, onUpdateDetail, onRemoveDetail,onRefresh }: Props) {
@@ -121,6 +122,7 @@ export default function OrderDetailsTable({ order, onAddDetail, onUpdateDetail, 
       number: detail.number ?? "",
       size: detail.size,
       gender: detail.gender,
+      observation: detail.observation ?? "",
     });
     setEditError(null);
   }
@@ -143,6 +145,7 @@ export default function OrderDetailsTable({ order, onAddDetail, onUpdateDetail, 
         number: editForm.number.trim() || undefined,
         size: editForm.size,
         gender: editForm.gender,
+        observation: editForm.observation.trim() || undefined,
       });
       cancelEdit();
       Swal.fire({
@@ -414,7 +417,7 @@ export default function OrderDetailsTable({ order, onAddDetail, onUpdateDetail, 
               <th className="px-4 py-3">Número</th>
               <th className="px-4 py-3">Talla</th>
               <th className="px-4 py-3">Corte</th>
-              <th className="px-4 py-3"></th>
+              <th className="px-4 py-3">Observaciones </th>
             </tr>
           </thead>
 
@@ -479,6 +482,15 @@ export default function OrderDetailsTable({ order, onAddDetail, onUpdateDetail, 
                     </td>
 
                     <td className="px-2 py-3">
+                      <input
+                        value={editForm.observation}
+                        onChange={(e) => setEditForm((p) => ({ ...p, observation: e.target.value }))}
+                        placeholder="Observaciones"
+                        className="w-full rounded-lg border border-gray-300 px-2 py-1.5 text-sm outline-none focus:border-slate-500"
+                      />
+                    </td>
+
+                    <td className="px-2 py-3">
                       <div className="flex justify-center gap-2">
                         <button onClick={cancelEdit} title="Cancelar">
                           <X size={16} className="text-gray-500" />
@@ -508,6 +520,7 @@ export default function OrderDetailsTable({ order, onAddDetail, onUpdateDetail, 
                       </span>
                     </td>
                     <td className="text-center">{detail.gender}</td>
+                    <td className="px-4 py-3">{detail.observation}</td>
                     <td>
                       {isConfiguring && (
                       <div className="flex justify-center gap-3">
