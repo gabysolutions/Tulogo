@@ -374,8 +374,10 @@ export default function QuoteFormModal({
         errors.itemErrors[item.id] = "Selecciona un tipo de tela.";
       } else if (item.qty <= 0) {
         errors.itemErrors[item.id] = "La cantidad debe ser mayor a 0.";
-      } else if (item.price <= 0) {
+      }  else if (item.category.toUpperCase() !== "CORTESIA" && item.price <= 0) {
         errors.itemErrors[item.id] = "El precio debe ser mayor a 0.";
+      } else if (item.price < 0) {
+        errors.itemErrors[item.id] = "El precio no puede ser negativo.";
       }
     });
 

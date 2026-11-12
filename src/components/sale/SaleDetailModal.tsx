@@ -1,20 +1,24 @@
+import { useState } from "react";
 import { FileText, Ban } from "lucide-react";
 import type { SaleWithDetails } from "../../types/sale";
 import { ModalShell, SaleStatusBadge, formatMoney } from "../sale/SaleUi";
+import SaleNotePreviewModal from "../sale/SaleNotePreviewModal";
 
 interface Props {
   sale: SaleWithDetails | null;
   onClose: () => void;
-  onNote: (sale: SaleWithDetails) => void;
+
   onCancelPayment: (sale: SaleWithDetails, paymentId: number) => void;
 }
+const actionBtn =
+  "flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 transition";
+export function SaleDetailModal({ sale, onClose,  onCancelPayment }: Props) {
+const [noteSale, setNoteSale] = useState<SaleWithDetails | null>(null);
 
-export function SaleDetailModal({ sale, onClose, onNote, onCancelPayment }: Props) {
   if (!sale) return null;
-
   const canCancelPayments = sale.status !== 0;
-
   return (
+     <>
     <ModalShell title={`Venta V-${String(sale.id).padStart(4, "0")}`} onClose={onClose} maxWidth="max-w-3xl">
       <div className="space-y-5 overflow-y-auto px-5 py-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -116,13 +120,14 @@ export function SaleDetailModal({ sale, onClose, onNote, onCancelPayment }: Prop
       </div>
 
       <div className="flex justify-end gap-2 border-t border-slate-200 bg-slate-50/50 px-5 py-4">
-        <button
-          type="button"
-          onClick={() => onNote(sale)}
-          className="flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-sm hover:bg-slate-100"
-        >
-          <FileText className="size-4" /> Nota de venta
-        </button>
+          <button
+            type="button"
+            onClick={() => setNoteSale(sale)}
+            title="Nota de venta (PDF)"
+            className={`${actionBtn} hover:bg-violet-100 hover:text-violet-700`}
+          >
+            <FileText size={18} />
+          </button>
         <button
           type="button"
           onClick={onClose}
@@ -132,5 +137,12 @@ export function SaleDetailModal({ sale, onClose, onNote, onCancelPayment }: Prop
         </button>
       </div>
     </ModalShell>
+    {noteSale && (
+        <SaleNotePreviewModal
+          sale={noteSale}
+          onClose={() => setNoteSale(null)}
+        />
+      )}
+    </>
   );
 }
