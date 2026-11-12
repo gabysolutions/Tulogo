@@ -43,7 +43,6 @@ export default function SalePage() {
     addPayment,
     cancelPayment,
     cancelSale,
-    openNote,
   } = useSales(10);
 
   const { articles, refetch: refetchArticles } = useArticleCatalog();
@@ -93,13 +92,7 @@ export default function SalePage() {
     }
   };
 
-  const handleNote = async (sale: Pick<Sale, "id">) => {
-    try {
-      await openNote(sale.id);
-    } catch (err) {
-      showError("No se pudo generar la nota", err);
-    }
-  };
+ 
 
     const handleCancelSale = async (sale: Sale) => {
    const { isConfirmed } = await Swal.fire({
@@ -240,7 +233,6 @@ export default function SalePage() {
       <SaleDetailModal
         sale={detail}
         onClose={closeDetail}
-        onNote={handleNote}
         onCancelPayment={handleCancelPayment}
       />
     </main>
