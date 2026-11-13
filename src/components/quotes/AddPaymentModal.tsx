@@ -18,6 +18,7 @@ const inputCls =
 const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   [PaymentMethod.EFECTIVO]: "Efectivo",
   [PaymentMethod.TRANSFERENCIA]: "Transferencia",
+  [PaymentMethod.CHEQUE]: "Cheque",
 };
 
 const fmt = (n: number) => n.toLocaleString("es-MX", { style: "currency", currency: "MXN" });

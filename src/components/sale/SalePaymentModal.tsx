@@ -95,6 +95,7 @@ export function SalePaymentModal({ sale, onClose, onSave }: Props) {
             >
               <option value="EFECTIVO">Efectivo</option>
               <option value="TRANSFERENCIA">Transferencia</option>
+              <option value="CHEQUE">Cheque</option>
             </select>
           </label>
         </div>

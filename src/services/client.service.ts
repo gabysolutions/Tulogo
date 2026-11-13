@@ -76,10 +76,13 @@ export interface QuickClientPayload {
 }
 
 function mapClient(dto: ClientDTO): Client {
-  const name = (dto.name ?? "").trim();
-  const paternal = (dto.paternal_last_name ?? "").trim();
-  const maternalRaw = (dto.maternal_last_name ?? "").trim();
-  const maternal = maternalRaw === "." ? "" : maternalRaw;
+  const clean = (v?: string) => {
+  const t = (v ?? "").trim();
+  return t === "." ? "" : t;
+};
+ const name = (dto.name ?? "").trim();
+const paternal = clean(dto.paternal_last_name);
+const maternal = clean(dto.maternal_last_name);
 
   return {
     id: dto.id,
@@ -119,7 +122,7 @@ function buildClientBody(payload: ClientPayload) {
   return {
     name: payload.name.trim(),
     paternalLastName: payload.paternal_last_name.trim(),
-    maternalLastName: payload.maternal_last_name?.trim() || ".",
+    maternalLastName: payload.maternal_last_name?.trim(),
     phone: payload.phone,
     email: payload.email,
   };
@@ -165,7 +168,7 @@ export async function createQuickClient(
   const { data } = await http.post<CreateClientResponse>("/client", {
     name: payload.name.trim(),
     paternalLastName: payload.paternal_last_name.trim(),
-    maternalLastName: payload.maternal_last_name?.trim() || ".",
+    maternalLastName: payload.maternal_last_name?.trim(),
     phone: payload.phone,
   });
   return data;

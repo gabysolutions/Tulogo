@@ -1,6 +1,7 @@
 export const PaymentMethod = {
   EFECTIVO: "efectivo",
   TRANSFERENCIA: "transferencia",
+  CHEQUE: "cheque",
 } as const;
 
 export type PaymentMethod = (typeof PaymentMethod)[keyof typeof PaymentMethod];

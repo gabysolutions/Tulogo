@@ -292,6 +292,7 @@ const TYPES: { value: ExpenseType; label: string }[] = [
 const METHODS: { value: PaymentMethod; label: string }[] = [
   { value: "efectivo", label: "Efectivo" },
   { value: "transferencia", label: "Transferencia" },
+  { value: "cheque", label: "Cheque" }
 ];
 
 interface Props {

@@ -1,5 +1,5 @@
 export type SaleStatus = 0 | 1 | 2; 
-export type PaymentMethod = "EFECTIVO" | "TRANSFERENCIA";
+export type PaymentMethod = "EFECTIVO" | "TRANSFERENCIA"| "CHEQUE";
 
 export interface SaleDetail {
   id: number;
