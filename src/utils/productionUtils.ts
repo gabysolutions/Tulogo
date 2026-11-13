@@ -43,14 +43,25 @@ export function deliveryLabel(order: DeliveryInfo): string {
   return `Entrega en ${days} días`;
 }
 
-export function formatDate(dateStr: string): string {
-  return new Date(dateStr + "T00:00:00").toLocaleDateString("es-MX", {
+export function formatDate(value?: string | null): string {
+  if (!value) return "—";
+
+  
+  const normalized = value.includes(" ") ? value.replace(" ", "T") : value;
+
+ 
+  const date = new Date(normalized.length === 10 ? `${normalized}T00:00:00` : normalized);
+
+  if (Number.isNaN(date.getTime())) return "—";
+
+  return date.toLocaleString("es-MX", {
     day: "2-digit",
     month: "short",
     year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
-
 export function progressPercent(status: number): number {
   return ((status - 1) / (STAGES.length - 1)) * 100;
 }

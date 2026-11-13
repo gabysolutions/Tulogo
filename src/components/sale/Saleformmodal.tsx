@@ -109,7 +109,7 @@ const handleArticleChange = (index: number, value: string) => {
   const phoneLen = newClientData.phone?.length ?? 0;
   const clientValid =
     !!selectedClient ||
-    (isNewClient && !!newClientData.name.trim() && !!newClientData.lastNameP.trim() && (phoneLen === 0 || phoneLen === 10));
+    (isNewClient && !!newClientData.name.trim() &&  (phoneLen === 0 || phoneLen === 10));
   const canSubmit = clientValid && !!deliveryDate && linesValid && advanceValid;
 
   const handleSubmit = async (e: FormEvent) => {

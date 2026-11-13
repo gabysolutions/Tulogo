@@ -159,10 +159,10 @@ export function ClientCreateModal({ open, onClose, onSave }: ClientCreateModalPr
                   <input className={inputClass} value={form.name} onChange={handleUpperChange("name")} required />
                 </Field>
                 <Field label="Apellido paterno">
-                  <input className={inputClass} value={form.paternal_last_name} onChange={handleUpperChange("paternal_last_name")} required />
+                  <input className={inputClass} value={form.paternal_last_name} onChange={handleUpperChange("paternal_last_name")}  />
                 </Field>
                 <Field label="Apellido materno">
-                  <input className={inputClass} value={form.maternal_last_name} onChange={handleUpperChange("maternal_last_name")} required />
+                  <input className={inputClass} value={form.maternal_last_name} onChange={handleUpperChange("maternal_last_name")}  />
                 </Field>
               </div>
             </section>

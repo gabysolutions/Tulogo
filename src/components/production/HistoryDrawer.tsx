@@ -23,7 +23,7 @@ export function HistoryDrawer({
   open,
   onOpenChange,
 }: Props) {
-  // Más reciente primero (por fecha y, en empate, por id)
+
   const sorted = useMemo(
     () =>
       [...movements].sort(
