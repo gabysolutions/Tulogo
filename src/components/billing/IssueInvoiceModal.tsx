@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef } from "react";
 import { AlertTriangle, Loader2, X } from "lucide-react";
 import type { Invoice, InvoiceMode, IssueInvoicePayload, QuoteBillingSummary } from "../../types/invoice";
 import { useCfdiUses } from "../../hooks/useBilling";
@@ -7,25 +7,28 @@ import { getSwal, showApiError, toast } from "../../utils/swal";
 import { TotalsPreview } from "./TotalsPreview";
 
 type Props = {
-  summary: QuoteBillingSummary;
+    summary: QuoteBillingSummary;
   onClose: () => void;
-  onIssue: (quoteId: number, payload: IssueInvoicePayload) => Promise<Invoice>;
+  onIssue: (payload: IssueInvoicePayload) => Promise<Invoice>;
   onIssued: () => void;
 };
 
 const MODES: InvoiceMode[] = ["full", "items", "amount"];
 
 export function IssueInvoiceModal({ summary, onClose, onIssue, onIssued }: Props) {
+  const isSale = summary.type === "sale";
+  const docLabel = isSale ? "Venta" : "Cotización";
+
   const cfdiUses = useCfdiUses();
   const [mode, setMode] = useState<InvoiceMode>("full");
   const [selected, setSelected] = useState<Record<number, { checked: boolean; qty: string }>>(() =>
     Object.fromEntries(summary.lines.map((l) => [l.detailId, { checked: false, qty: String(l.remainingQuantity) }])),
   );
   const [amount, setAmount] = useState("");
-  const [description, setDescription] = useState("Anticipo de uniformes");
+  const [description, setDescription] = useState(isSale ? "Venta de uniformes" : "Anticipo de uniformes");
   const [cfdiUse, setCfdiUse] = useState(summary.client?.cfdiUse || "G03");
   const [attemptedSave, setAttemptedSave] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  
 
   const missing = useMemo(() => {
     const c = summary.client;
@@ -92,40 +95,42 @@ export function IssueInvoiceModal({ summary, onClose, onIssue, onIssued }: Props
     if (mode === "amount") return { mode, cfdiUse, amount: round2(Number(amount)), description: description.trim() };
     return { mode, cfdiUse };
   };
-
+  
+  const [submitting, setSubmitting] = useState(false);
+const submittingRef = useRef(false);
   const handleSubmit = async () => {
-    setAttemptedSave(true);
-    if (formError) return;
-    const Swal = await getSwal();
-    const t = calcTotals(previewSubtotal);
-    const useName = cfdiUses.find((u) => u.value === cfdiUse)?.name ?? "";
-    const ok = await Swal.fire({
-      title: "¿Emitir factura?",
-      icon: "question",
-      html: `<div style="text-align:left;font-size:14px;line-height:1.8">
-        <b>Modo:</b> ${INVOICE_MODE_LABEL[mode]}<br/>
-        <b>Subtotal:</b> ${formatMoney(t.subtotal)}<br/>
-        <b>IVA 16%:</b> ${formatMoney(t.iva)}<br/>
-        <b>Total:</b> ${formatMoney(t.total)}<br/>
-        <b>Uso del CFDI:</b> ${cfdiUse} ${useName}</div>`,
-      showCancelButton: true,
-      confirmButtonText: "Emitir",
-      cancelButtonText: "Revisar",
-      confirmButtonColor: "#2563eb",
-    });
-    if (!ok.isConfirmed) return;
-    setSubmitting(true);
-    try {
-      const inv = await onIssue(summary.quoteId, buildPayload());
-      await toast("success", `Factura ${inv.folio ?? ""} emitida`);
-      onIssued();
-      onClose();
-    } catch (e) {
-      await showApiError(toApiError(e), "No se pudo emitir la factura");
-    } finally {
-      setSubmitting(false);
-    }
-  };
+  if (submittingRef.current) return;
+  setAttemptedSave(true);
+  if (formError) return;
+
+  const Swal = await getSwal();
+  const t = calcTotals(previewSubtotal);
+  const useName = cfdiUses.find((u) => u.value === cfdiUse)?.name ?? "";
+  const ok = await Swal.fire({
+    title: "¿Emitir factura?",
+    icon: "question",
+    html: `...`,   // igual que lo tienes
+    showCancelButton: true,
+    confirmButtonText: "Emitir",
+    cancelButtonText: "Revisar",
+    confirmButtonColor: "#2563eb",
+  });
+  if (!ok.isConfirmed) return;
+
+  submittingRef.current = true;
+  setSubmitting(true);
+  try {
+    const inv = await onIssue(buildPayload());   // única llamada
+    await toast("success", `Factura ${inv.folio ?? ""} emitida`);
+    onIssued();
+    onClose();
+  } catch (e) {
+    await showApiError(toApiError(e), "No se pudo emitir la factura");
+  } finally {
+    submittingRef.current = false;
+    setSubmitting(false);
+  }
+};
 
   const inputCls = (err: boolean) =>
     `w-full rounded-xl border px-3 py-2 text-sm outline-none transition focus:ring-4 ${
@@ -138,7 +143,7 @@ export function IssueInvoiceModal({ summary, onClose, onIssue, onIssued }: Props
       <div className="relative flex max-h-[92vh] w-full max-w-2xl animate-in fade-in zoom-in-95 flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
         <header className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
           <h2 className="truncate text-base font-semibold text-slate-900">
-            Emitir factura · {summary.folio} · {summary.client?.name ?? ""}
+            Emitir factura · {docLabel} {summary.folio} · {summary.client?.name ?? ""}
           </h2>
           <button onClick={onClose} disabled={submitting} className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 disabled:opacity-40" aria-label="Cerrar">
             <X className="h-4 w-4" />

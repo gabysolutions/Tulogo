@@ -1,11 +1,17 @@
 import { Search, X } from "lucide-react";
-import type { BillingStatusFilter } from "../../types/invoice";
+import type { BillingSourceFilter,  BillingStatusFilter } from "../../types/invoice";
 
-const SEGMENTS: { value: BillingStatusFilter; label: string }[] = [
+const STATUS_SEGMENTS: { value: BillingStatusFilter; label: string }[] = [
   { value: "all", label: "Todas" },
   { value: "none", label: "Sin facturar" },
   { value: "partial", label: "Parcial" },
   { value: "complete", label: "Facturada" },
+];
+
+const TYPE_SEGMENTS: { value: BillingSourceFilter; label: string }[] = [
+  { value: "all", label: "Todos" },
+  { value: "quote", label: "Cotizaciones" },
+  { value: "sale", label: "Ventas" },
 ];
 
 type Props = {
@@ -13,9 +19,37 @@ type Props = {
   onSearchChange: (v: string) => void;
   status: BillingStatusFilter;
   onStatusChange: (v: BillingStatusFilter) => void;
+  type: BillingSourceFilter;
+  onTypeChange: (v: BillingSourceFilter) => void;
 };
 
-export function BillingFilters({ search, onSearchChange, status, onStatusChange }: Props) {
+function Segments<T extends string>({
+  options,
+  value,
+  onChange,
+}: {
+  options: { value: T; label: string }[];
+  value: T;
+  onChange: (v: T) => void;
+}) {
+  return (
+    <div className="flex overflow-x-auto rounded-xl bg-slate-100 p-1">
+      {options.map((s) => (
+        <button
+          key={s.value}
+          onClick={() => onChange(s.value)}
+          className={`whitespace-nowrap rounded-lg px-3.5 py-1.5 text-sm font-medium transition ${
+            value === s.value ? "bg-white text-blue-700 shadow-sm" : "text-slate-600 hover:text-slate-900"
+          }`}
+        >
+          {s.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+export function BillingFilters({ search, onSearchChange, status, onStatusChange, type, onTypeChange }: Props) {
   return (
     <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm md:flex-row md:items-center md:justify-between">
       <div className="relative w-full md:max-w-sm">
@@ -37,7 +71,7 @@ export function BillingFilters({ search, onSearchChange, status, onStatusChange 
         )}
       </div>
       <div className="flex overflow-x-auto rounded-xl bg-slate-100 p-1">
-        {SEGMENTS.map((s) => (
+        {STATUS_SEGMENTS.map((s) => (
           <button
             key={s.value}
             onClick={() => onStatusChange(s.value)}
@@ -46,6 +80,19 @@ export function BillingFilters({ search, onSearchChange, status, onStatusChange 
             }`}
           >
             {s.label}
+          </button>
+        ))}
+      </div>
+      <div className="flex overflow-x-auto rounded-xl bg-slate-100 p-1">
+        {TYPE_SEGMENTS.map((t) => (
+          <button
+            key={t.value}
+            onClick={() => onTypeChange(t.value)}
+            className={`whitespace-nowrap rounded-lg px-3.5 py-1.5 text-sm font-medium transition ${
+              type === t.value ? "bg-white text-blue-700 shadow-sm" : "text-slate-600 hover:text-slate-900"
+            }`}
+          >
+            {t.label}
           </button>
         ))}
       </div>

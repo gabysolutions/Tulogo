@@ -21,6 +21,10 @@ type View = "loading" | "notfound" | "unavailable" | "error" | "form" | "success
 const uid = () => Math.random().toString(36).slice(2, 10);
 const parseApiDate = (s: string) => new Date(s.replace(" ", "T"));
 
+const DEFAULT_GENDER =
+  GENDER_OPTIONS.find((g) => String(g.value).toLowerCase() === "unisex")?.value
+  ?? GENDER_OPTIONS[0]!.value;
+
 const UNAVAILABLE_TEXT =
   "Este enlace ya venció o la lista ya fue enviada. Si necesitas hacer cambios, contacta a tu asesor.";
 
@@ -59,7 +63,7 @@ function OrderForm({ token }: { token: string }) {
       nickname: "",
       number: "",
       size: from?.size ?? "",
-      gender: from?.gender ?? GENDER_OPTIONS[0]!.value,
+      gender: from?.gender ?? DEFAULT_GENDER,
       observation: "",
     }),
     [],
@@ -91,12 +95,12 @@ function OrderForm({ token }: { token: string }) {
     return () => { alive = false; };
   }, [token, draftKey, blank, attempt]);
 
-  // Autosave del borrador
+  
   useEffect(() => {
     if (loaded.current && view === "form") localStorage.setItem(draftKey, JSON.stringify(pieces));
   }, [pieces, draftKey, view]);
 
-  // Piezas que faltan por capturar (lo pedido menos lo ya registrado)
+ 
   const expectedPieces = useMemo(
     () => order?.articles.reduce((sum, a) => sum + Math.max(a.amount - a.piecesRegistered, 0), 0) ?? 0,
     [order],
@@ -112,17 +116,17 @@ const articleOptions = useMemo<ArticleOption[]>(() => {
   }));
 }, [order, pieces]);
 
-  const errors = useMemo(() => {
-    const map: Record<string, PieceErrors> = {};
-    if (!order) return map;
-    for (const p of pieces) {
-      const e: PieceErrors = {};
-      if (!p.size) e.size = "La talla es obligatoria";
-      if (order.articles.length > 1 && p.articleId == null) e.articleId = "Elige un artículo";
-      if (Object.keys(e).length) map[p.uid] = e;
-    }
-    return map;
-  }, [pieces, order]);
+const errors = useMemo(() => {
+  const map: Record<string, PieceErrors> = {};
+  if (!order) return map;
+  for (const p of pieces) {
+    const e: PieceErrors = {};
+    if (!p.size) e.size = "La talla es obligatoria";
+    if (p.articleId == null) e.articleId = "Elige un artículo";
+    if (Object.keys(e).length) map[p.uid] = e;
+  }
+  return map;
+}, [pieces, order]);
 
   const duplicates = useMemo(() => {
     const counts = new Map<string, number>();
@@ -302,6 +306,7 @@ const articleOptions = useMemo<ArticleOption[]>(() => {
 
 function ExpiryNotice({ expiresAt }: { expiresAt: string }) {
   const [now, setNow] = useState(() => Date.now());
+
   const expiry = parseApiDate(expiresAt);
   const left = expiry.getTime() - now;
   const soon = left > 0 && left < 2 * 3600_000;

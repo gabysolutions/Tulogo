@@ -22,9 +22,16 @@ import type {
   QuoteBillingSummaryDTO,
   SendInvoicePayload,
   SendInvoiceResult,
+   BillingSource,
 } from "../types/invoice";
+import { folioFromId as saleFolioFromId } from "../utils/folio";
 
-// ---------- Error de la API de facturación ----------
+
+export const issueSaleInvoice = (saleId: number, payload: IssueInvoicePayload) =>
+  issueDocumentInvoice("sale", saleId, payload);
+const folioFor = (type: BillingSource, id: number): string =>
+  type === "sale" ? saleFolioFromId(id) : folioFromId(id);
+
 export class InvoiceApiError extends Error {
   status: number;
   details?: InvoiceErrorDetails;
@@ -43,7 +50,7 @@ interface ErrorBody {
 }
 
 async function readErrorBody(data: unknown): Promise<ErrorBody | undefined> {
-  // En descargas (responseType "blob") el error JSON llega como Blob
+  
   if (data instanceof Blob) {
     try {
       return JSON.parse(await data.text()) as ErrorBody;
@@ -74,24 +81,28 @@ async function run<T>(call: () => Promise<T>): Promise<T> {
   }
 }
 
-// ---------- Utilidades de mapeo ----------
+
 const toNumber = (value: unknown): number => {
   const n = Number(value);
   return Number.isFinite(n) ? n : 0;
 };
 
-// Las fechas DATE llegan como ISO; nos quedamos con "YYYY-MM-DD" para evitar corrimientos de zona horaria
+
 const toDateOnly = (value: string | null | undefined): string | null =>
   value ? String(value).slice(0, 10) : null;
 
-// ---------- Mapeo DTO -> dominio ----------
+
 function mapBillingQuoteRow(dto: BillingQuoteRowDTO): BillingQuoteRow {
   const subtotal = toNumber(dto.subtotal);
   const invoiced = toNumber(dto.invoiced);
+  const type: BillingSource = dto.type ?? "quote";
+  const documentId = dto.document_id ?? dto.quote_id ?? 0;
 
   return {
-    quoteId: dto.quote_id,
-    folio: folioFromId(dto.quote_id),
+   type,
+    documentId,
+    quoteId: type === "quote" ? documentId : null,
+    folio: folioFor(type, documentId),
     clientId: dto.client_id,
     clientName: dto.client_name,
     clientFiscalComplete: Boolean(dto.client_fiscal_complete),
@@ -110,6 +121,7 @@ function mapInvoiceItem(dto: InvoiceItemDTO): InvoiceItem {
   return {
     id: dto.id,
     quoteDetailId: dto.quote_detail_id ?? null,
+    saleDetailId: dto.sale_detail_id ?? null,
     description: dto.description,
     quantity: toNumber(dto.quantity),
     unitPrice: toNumber(dto.unit_price),
@@ -151,11 +163,17 @@ function mapLine(dto: QuoteBillingLineDTO): QuoteBillingLine {
 }
 
 function mapSummary(dto: QuoteBillingSummaryDTO): QuoteBillingSummary {
+  const type: BillingSource = dto.type ?? "quote";
+  const documentId = dto.documentId ?? dto.quoteId ?? 0;
+
   return {
-    quoteId: dto.quoteId,
-    folio: folioFromId(dto.quoteId),
+    type,
+    documentId,
+    quoteId: type === "quote" ? documentId : null,
+    folio: folioFor(type, documentId),
     requiresInvoice: Boolean(dto.requiresInvoice),
     quoteCanceled: Boolean(dto.quoteCanceled),
+    canceled: Boolean(dto.canceled ?? dto.quoteCanceled),
     subtotal: toNumber(dto.subtotal),
     invoiced: toNumber(dto.invoiced),
     remaining: toNumber(dto.remaining),
@@ -177,11 +195,9 @@ function mapSummary(dto: QuoteBillingSummaryDTO): QuoteBillingSummary {
   };
 }
 
-// ---------- Llamadas a la API ----------
 
-/** GET /invoice/quotes: lista de cotizaciones con factura, con estadísticas globales */
 export function getBillingQuotes(params: GetBillingQuotesParams = {}): Promise<BillingQuotesResponse> {
-  const { search, status, page = 1, pageSize = 10 } = params;
+  const { search, status, type, page = 1, pageSize = 10 } = params;
 
   return run(async () => {
     const { data } = await http.get<BillingQuotesResponseDTO>("/invoice/quotes", {
@@ -190,6 +206,7 @@ export function getBillingQuotes(params: GetBillingQuotesParams = {}): Promise<B
         pageSize,
         ...(search?.trim() ? { search: search.trim() } : {}),
         ...(status && status !== "all" ? { status } : {}),
+        ...(type && type !== "all" ? { type } : {}),
       },
     });
 
@@ -206,23 +223,12 @@ export function getBillingQuotes(params: GetBillingQuotesParams = {}): Promise<B
   });
 }
 
-/** GET /invoice/quote/:quoteId: resumen de facturación de una cotización */
-export function getQuoteBilling(quoteId: number): Promise<QuoteBillingSummary> {
-  return run(async () => {
-    const { data } = await http.get<QuoteBillingSummaryDTO>(`/invoice/quote/${quoteId}`);
-    return mapSummary(data);
-  });
-}
 
-/** POST /invoice/quote/:quoteId: emite una factura ligada a la cotización */
-export function issueInvoice(quoteId: number, payload: IssueInvoicePayload): Promise<Invoice> {
-  return run(async () => {
-    const { data } = await http.post<InvoiceDTO>(`/invoice/quote/${quoteId}`, payload);
-    return mapInvoice(data);
-  });
-}
 
-/** GET /invoice/:id/pdf */
+
+
+
+
 export function getInvoicePdf(id: number): Promise<Blob> {
   return run(async () => {
     const { data } = await http.get<Blob>(`/invoice/${id}/pdf`, { responseType: "blob" });
@@ -230,7 +236,6 @@ export function getInvoicePdf(id: number): Promise<Blob> {
   });
 }
 
-/** GET /invoice/:id/xml */
 export function getInvoiceXml(id: number): Promise<Blob> {
   return run(async () => {
     const { data } = await http.get<Blob>(`/invoice/${id}/xml`, { responseType: "blob" });
@@ -238,7 +243,7 @@ export function getInvoiceXml(id: number): Promise<Blob> {
   });
 }
 
-/** POST /invoice/:id/send */
+
 export function sendInvoice(id: number, payload: SendInvoicePayload): Promise<SendInvoiceResult> {
   return run(async () => {
     const { data } = await http.post<SendInvoiceResult>(`/invoice/${id}/send`, payload);
@@ -246,7 +251,7 @@ export function sendInvoice(id: number, payload: SendInvoicePayload): Promise<Se
   });
 }
 
-/** DELETE /invoice/:id: cancela la factura ante el SAT */
+
 export function cancelInvoice(id: number, payload: CancelInvoicePayload): Promise<CancelInvoiceResult> {
   return run(async () => {
     const { data } = await http.delete<CancelInvoiceResult>(`/invoice/${id}`, { data: payload });
@@ -254,11 +259,7 @@ export function cancelInvoice(id: number, payload: CancelInvoicePayload): Promis
   });
 }
 
-/**
- * GET /invoice/catalogs/cfdi-uses
- * La forma del catálogo del proveedor aún no está confirmada: se aceptan varias formas
- * ({ Value, Name }, { value, name }, { Id, Description }).
- */
+
 export function getCfdiUses(): Promise<CfdiUseOption[]> {
   return run(async () => {
     const { data } = await http.get<Record<string, unknown>[]>("/invoice/catalogs/cfdi-uses");
@@ -272,3 +273,28 @@ export function getCfdiUses(): Promise<CfdiUseOption[]> {
       .filter((option) => option.value !== "");
   });
 }
+
+export function getDocumentBilling(type: BillingSource, id: number): Promise<QuoteBillingSummary> {
+  return run(async () => {
+    const { data } = await http.get<QuoteBillingSummaryDTO>(`/invoice/${type}/${id}`);
+    return mapSummary(data);
+  });
+}
+
+
+export function issueDocumentInvoice(
+  type: BillingSource,
+  id: number,
+  payload: IssueInvoicePayload
+): Promise<Invoice> {
+  return run(async () => {
+    const { data } = await http.post<InvoiceDTO>(`/invoice/${type}/${id}`, payload);
+    return mapInvoice(data);
+  });
+}
+
+export const getQuoteBilling = (quoteId: number) => getDocumentBilling("quote", quoteId);
+export const getSaleBilling = (saleId: number) => getDocumentBilling("sale", saleId);
+export const issueInvoice = (quoteId: number, payload: IssueInvoicePayload) =>
+  issueDocumentInvoice("quote", quoteId, payload);
+

@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import * as service from "../services/invoice.service";
 import type {
-  ApiError,
+   ApiError,
+  BillingDocRef,
   BillingPagination,
   BillingQuoteRow,
   BillingQuotesQuery,
+  BillingSource,
   BillingStats,
   CancelInvoicePayload,
   IssueInvoicePayload,
@@ -36,14 +38,14 @@ export function useBilling(query: BillingQuotesQuery) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<ApiError | null>(null);
   const reqId = useRef(0);
-  const { search, status, page, pageSize } = query;
+  const { search, status,type, page, pageSize } = query;
 
   const refresh = useCallback(async () => {
     const id = ++reqId.current;
     setLoading(true);
     setError(null);
     try {
-      const res = await service.getBillingQuotes({ search, status, page, pageSize });
+      const res = await service.getBillingQuotes({ search, status, type, page, pageSize });
       if (id !== reqId.current) return;
       setRows(res.rows);
       setStats(res.stats);
@@ -53,20 +55,20 @@ export function useBilling(query: BillingQuotesQuery) {
     } finally {
       if (id === reqId.current) setLoading(false);
     }
-  }, [search, status, page, pageSize]);
+  }, [search, status, type, page, pageSize]);
 
   useEffect(() => {
     void refresh();
   }, [refresh]);
 
-  const issue = useCallback(
-    async (quoteId: number, payload: IssueInvoicePayload) => {
-      const inv = await service.issueInvoice(quoteId, payload);
-      void refresh();
-      return inv;
-    },
-    [refresh],
-  );
+ const issue = useCallback(
+  async (source: BillingSource, documentId: number, payload: IssueInvoicePayload) => {
+    const inv = await service.issueDocumentInvoice(source, documentId, payload);
+    void refresh();
+    return inv;
+  },
+  [refresh],
+);
 
   const cancel = useCallback(
     async (invoiceId: number, payload: CancelInvoicePayload) => {
@@ -98,26 +100,29 @@ export function useBilling(query: BillingQuotesQuery) {
 
 export type BillingActions = Pick<ReturnType<typeof useBilling>, "issue" | "cancel" | "send" | "downloadPdf" | "downloadXml">;
 
-export function useQuoteBilling(quoteId: number | null) {
+export function useDocumentBilling(doc: BillingDocRef | null) {
   const [summary, setSummary] = useState<QuoteBillingSummary | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
   const reqId = useRef(0);
 
+  const type = doc?.type ?? null;
+  const docId = doc?.id ?? null;
+
   const reload = useCallback(async () => {
-    if (quoteId == null) return;
+    if (type == null || docId == null) return;
     const id = ++reqId.current;
     setLoading(true);
     setError(null);
     try {
-      const res = await service.getQuoteBilling(quoteId);
+      const res = await service.getDocumentBilling(type, docId);
       if (id === reqId.current) setSummary(res);
     } catch (e) {
       if (id === reqId.current) setError(toApiError(e));
     } finally {
       if (id === reqId.current) setLoading(false);
     }
-  }, [quoteId]);
+  }, [type, docId]);
 
   useEffect(() => {
     setSummary(null);
@@ -126,6 +131,9 @@ export function useQuoteBilling(quoteId: number | null) {
 
   return { summary, loading, error, reload };
 }
+
+export const useQuoteBilling = (quoteId: number | null) =>
+  useDocumentBilling(quoteId == null ? null : { type: "quote", id: quoteId });
 
 export function useCfdiUses() {
   const [uses, setUses] = useState<{ value: string; name: string }[]>([]);

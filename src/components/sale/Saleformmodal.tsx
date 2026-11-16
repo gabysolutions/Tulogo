@@ -53,6 +53,7 @@ export function SaleFormModal({ open, articles, fabricTypes, onClose, onSave }: 
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
+    console.log("SaleFormModal montado");
     if (!open) return;
     setSelectedClient(null);
     setIsNewClient(false);
@@ -64,6 +65,7 @@ export function SaleFormModal({ open, articles, fabricTypes, onClose, onSave }: 
     setLines([{ ...EMPTY_LINE }]);
     setAdvance("");
     setPaymentMethod("EFECTIVO");
+    return () => console.log("SaleFormModal desmontado");
   }, [open]);
 
   const subtotal = useMemo(

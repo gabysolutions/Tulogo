@@ -1,9 +1,23 @@
 import { AlertTriangle, FileSearch, Receipt } from "lucide-react";
-import type { BillingQuoteRow } from "../../types/invoice";
+import type { BillingDocRef, BillingQuoteRow, BillingSource} from "../../types/invoice";
 import { BILLING_STATE_META, formatDate, formatMoney, invoicedPercent } from "../../utils/invoiceUtils";
 import { BillingStatusBadge } from "./BillingStatusBadge";
 
-type Props = { rows: BillingQuoteRow[]; loading: boolean; onOpen: (quoteId: number) => void };
+type Props = { rows: BillingQuoteRow[]; loading: boolean; onOpen: (doc: BillingDocRef ) => void };
+
+const docRef = (r: BillingQuoteRow): BillingDocRef => ({ type: r.type, id: r.documentId });
+
+function SourceBadge({ type }: { type: BillingSource }) {
+  return (
+    <span
+      className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
+        type === "sale" ? "bg-violet-100 text-violet-700" : "bg-blue-100 text-blue-700"
+      }`}
+    >
+      {type === "sale" ? "Venta" : "Cotización"}
+    </span>
+  );
+}
 
 function Progress({ row }: { row: BillingQuoteRow }) {
   const pct = invoicedPercent(row.subtotal, row.invoiced);
@@ -25,13 +39,13 @@ function FiscalWarning() {
   );
 }
 
-function ActionButton({ row, onOpen }: { row: BillingQuoteRow; onOpen: (id: number) => void }) {
+function ActionButton({ row, onOpen }: { row: BillingQuoteRow; onOpen: (doc: BillingDocRef) => void }) {
   const primary = row.remaining > 0.004;
   return (
     <button
       onClick={(e) => {
         e.stopPropagation();
-        onOpen(row.quoteId);
+        onOpen(docRef(row));
       }}
       className={
         primary
@@ -60,8 +74,8 @@ export function BillingTable({ rows, loading, onOpen }: Props) {
     return (
       <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center">
         <FileSearch className="h-14 w-14 text-slate-300" />
-        <p className="mt-4 font-medium text-slate-700">No hay cotizaciones que coincidan</p>
-        <p className="mt-1 text-sm text-slate-500">Ajusta la búsqueda o el filtro de estado.</p>
+        <p className="mt-4 font-medium text-slate-700">No hay documentos que coincidan</p>
+        <p className="mt-1 text-sm text-slate-500">Ajusta la búsqueda o los filtros.</p>
       </div>
     );
   }
@@ -86,7 +100,7 @@ export function BillingTable({ rows, loading, onOpen }: Props) {
           </thead>
           <tbody className="divide-y divide-slate-100">
             {rows.map((r) => (
-              <tr key={r.quoteId} onClick={() => onOpen(r.quoteId)} className="cursor-pointer transition hover:bg-blue-50/40">
+              <tr  key={`${r.type}-${r.documentId}`} onClick={() => onOpen(docRef(r))}className="cursor-pointer transition hover:bg-blue-50/40">
                 <td className="px-4 py-3 font-semibold text-slate-900">{r.folio}</td>
                 <td className="px-4 py-3">
                   <div className="flex flex-col">
@@ -116,14 +130,17 @@ export function BillingTable({ rows, loading, onOpen }: Props) {
       {/* Móvil */}
       <div className="grid gap-3 lg:hidden">
         {rows.map((r) => (
-          <div
-            key={r.quoteId}
-            onClick={() => onOpen(r.quoteId)}
+         <div
+            key={`${r.type}-${r.documentId}`}
+            onClick={() => onOpen(docRef(r))}
             className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition active:scale-[0.99]"
           >
-            <div className="flex items-start justify-between gap-2">
+             <div className="flex items-start justify-between gap-2">
               <div>
-                <p className="font-semibold text-slate-900">{r.folio}</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-semibold text-slate-900">{r.folio}</p>
+                  <SourceBadge type={r.type} />
+                </div>
                 <p className="text-sm text-slate-700">{r.clientName}</p>
                 {!r.clientFiscalComplete && <FiscalWarning />}
               </div>

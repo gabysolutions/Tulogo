@@ -1,13 +1,20 @@
+export interface BillingDocRef {
+  type: BillingSource;
+  id: number;
+}
 
 export const INVOICE_STATUSES = ["pending", "active", "cancel_pending", "canceled", "failed"] as const;
 export type InvoiceStatus = (typeof INVOICE_STATUSES)[number];
 
 export const INVOICE_MODES = ["full", "items", "amount"] as const;
 export type InvoiceMode = (typeof INVOICE_MODES)[number];
-
 export const BILLING_STATES = ["none", "partial", "complete"] as const;
 export type BillingState = (typeof BILLING_STATES)[number];
 export type BillingStatusFilter = BillingState | "all";
+
+export const BILLING_SOURCES = ["quote", "sale"] as const;
+export type BillingSource = (typeof BILLING_SOURCES)[number];
+export type BillingSourceFilter = BillingSource | "all";
 
 export const CANCEL_MOTIVES = [
   { value: "01", label: "Con errores, con relación (requiere UUID sustituto)" },
@@ -34,7 +41,9 @@ export interface ApiError {
 
 
 export interface BillingQuoteRowDTO {
-  quote_id: number;
+  type?: BillingSource;
+  document_id?: number;
+  quote_id: number | null;
   client_id: number;
   client_name: string;
   client_fiscal_complete: boolean;
@@ -71,6 +80,7 @@ export interface BillingQuotesResponseDTO {
 export interface InvoiceItemDTO {
   id: number;
   quote_detail_id: number | null;
+  sale_detail_id?: number | null;
   description: string;
   quantity: string | number;
   unit_price: string | number;
@@ -120,9 +130,12 @@ export interface QuoteBillingClientDTO {
 }
 
 export interface QuoteBillingSummaryDTO {
-  quoteId: number;
+  type?: BillingSource;
+  documentId?: number;
+  quoteId: number | null;
   requiresInvoice: boolean;
   quoteCanceled: boolean;
+  canceled?: boolean;
   subtotal: number;
   invoiced: number;
   remaining: number;
@@ -133,8 +146,9 @@ export interface QuoteBillingSummaryDTO {
 
 
 export interface BillingQuoteRow {
-  quoteId: number;
- 
+  type: BillingSource;
+  documentId: number;
+  quoteId: number | null;
   folio: string;
   clientId: number;
   clientName: string;
@@ -144,7 +158,7 @@ export interface BillingQuoteRow {
   invoiced: number;
   remaining: number;
   
-  state: BillingState;
+  state:BillingState;
   requiresInvoice: boolean;
   invoicesCount: number;
   lastInvoiceDate: string | null;
@@ -166,6 +180,7 @@ export interface BillingQuotesResponse {
 export interface InvoiceItem {
   id: number;
   quoteDetailId: number | null;
+  saleDetailId: number | null;
   description: string;
   quantity: number;
   unitPrice: number;
@@ -214,11 +229,14 @@ export interface QuoteBillingClient {
 }
 
 export interface QuoteBillingSummary {
-  quoteId: number;
-  
+   type: BillingSource;
+  documentId: number;
+  quoteId: number | null;
+
   folio: string;
   requiresInvoice: boolean;
   quoteCanceled: boolean;
+  canceled: boolean;
   subtotal: number;
   invoiced: number;
   remaining: number;
@@ -236,6 +254,7 @@ export interface CfdiUseOption {
 export interface GetBillingQuotesParams {
   search?: string;
   status?: BillingStatusFilter;
+  type?: BillingSourceFilter;
   page?: number;
   pageSize?: number;
 }

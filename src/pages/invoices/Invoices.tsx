@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { RefreshCw } from "lucide-react";
-import type { BillingQuotesQuery, BillingStatusFilter } from "../../types/invoice";
+import type {
+  BillingDocRef,
+  BillingQuotesQuery,
+  BillingSourceFilter,
+  BillingStatusFilter,
+} from "../../types/invoice";
 import { useBilling } from "../../hooks/useBilling";
 import { BillingStats } from "../../components/billing/BillingStats";
 import { BillingFilters } from "../../components/billing/BillingFilters";
@@ -14,8 +19,9 @@ export default function Invoices() {
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<BillingStatusFilter>("all");
+  const [type, setType] = useState<BillingSourceFilter>("all");
   const [page, setPage] = useState(1);
-  const [openQuoteId, setOpenQuoteId] = useState<number | null>(null);
+  const [openDoc, setOpenDoc] = useState<BillingDocRef | null>(null);
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -25,7 +31,10 @@ export default function Invoices() {
     return () => clearTimeout(t);
   }, [searchInput]);
 
-  const query = useMemo<BillingQuotesQuery>(() => ({ search, status, page, pageSize: PAGE_SIZE }), [search, status, page]);
+  const query = useMemo<BillingQuotesQuery>(
+    () => ({ search, status, type, page, pageSize: PAGE_SIZE }),
+    [search, status, type, page],
+  );
   const billing = useBilling(query);
   const { rows, stats, pagination, loading, error, refresh } = billing;
 
@@ -33,17 +42,19 @@ export default function Invoices() {
     setStatus(s);
     setPage(1);
   }, []);
-  const closeDrawer = useCallback(() => setOpenQuoteId(null), []);
+  const handleType = useCallback((t: BillingSourceFilter) => {
+    setType(t);
+    setPage(1);
+  }, []);
+  const closeDrawer = useCallback(() => setOpenDoc(null), []);
 
   return (
     <div className="mx-auto max-full space-y-6 p-4 sm:p-6 lg:p-8">
-        <div className="flex items-start justify-between gap-3 sm:items-end sm:gap-6">
+      <div className="flex items-start justify-between gap-3 sm:items-end sm:gap-6">
         <div className="min-w-0">
-          <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
-            Facturación
-          </h1>
+          <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">Facturación</h1>
           <p className="mt-1 text-sm text-slate-500">
-            Emite y da seguimiento a las facturas de tus cotizaciones.
+            Emite y da seguimiento a las facturas de tus cotizaciones y ventas.
           </p>
         </div>
 
@@ -58,16 +69,23 @@ export default function Invoices() {
       </div>
 
       <BillingStats stats={stats} loading={loading} />
-      <BillingFilters search={searchInput} onSearchChange={setSearchInput} status={status} onStatusChange={handleStatus} />
+      <BillingFilters
+        search={searchInput}
+        onSearchChange={setSearchInput}
+        status={status}
+        onStatusChange={handleStatus}
+        type={type}
+        onTypeChange={handleType}
+      />
 
       {error && <div className="rounded-2xl bg-red-50 p-4 text-sm text-red-700 ring-1 ring-red-200">{error.message}</div>}
 
       <div>
-        <BillingTable rows={rows} loading={loading} onOpen={setOpenQuoteId} />
+        <BillingTable rows={rows} loading={loading} onOpen={setOpenDoc} />
         {pagination && pagination.total > 0 && <Pagination pagination={pagination} onPageChange={setPage} disabled={loading} />}
       </div>
 
-      <QuoteBillingDrawer quoteId={openQuoteId} onClose={closeDrawer} actions={billing} />
+      <QuoteBillingDrawer document={openDoc} onClose={closeDrawer} actions={billing} />
     </div>
   );
 }

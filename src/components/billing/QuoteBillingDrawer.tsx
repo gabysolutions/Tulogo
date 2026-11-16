@@ -1,30 +1,35 @@
 import { useEffect, useState } from "react";
 import { Ban, Receipt, X } from "lucide-react";
 import type { BillingActions } from "../../hooks/useBilling";
-import { useQuoteBilling } from "../../hooks/useBilling";
+import { useDocumentBilling } from "../../hooks/useBilling";
+import type { BillingDocRef } from "../../types/invoice";
 import { folioFromId, formatMoney, getBillingState, invoicedPercent } from "../../utils/invoiceUtils";
+import { folioFromId as saleFolioFromId } from "../../utils/folio";
 import { BillingStatusBadge } from "./BillingStatusBadge";
 import { FiscalDataCard } from "./FiscalDataCard";
 import { InvoiceHistory } from "./InvoiceHistory";
 import { IssueInvoiceModal } from "./IssueInvoiceModal";
 
-type Props = { quoteId: number | null; onClose: () => void; actions: BillingActions };
+type Props = { document: BillingDocRef | null; onClose: () => void; actions: BillingActions };
 
-export function QuoteBillingDrawer({ quoteId, onClose, actions }: Props) {
-  const { summary, loading, error, reload } = useQuoteBilling(quoteId);
-  console.log("email del cliente:", summary?.client?.email);
+export function QuoteBillingDrawer({ document: doc, onClose, actions }: Props) {
+  const { summary, loading, error, reload } = useDocumentBilling(doc);
   const [issueOpen, setIssueOpen] = useState(false);
+  const isOpen = doc != null;
 
   useEffect(() => {
-    if (quoteId == null) return;
+    if (!isOpen) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && !issueOpen && onClose();
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [quoteId, issueOpen, onClose]);
+  }, [isOpen, issueOpen, onClose]);
 
-  if (quoteId == null) return null;
+  if (!doc) return null;
 
-  const canIssue = !!summary && !summary.quoteCanceled && summary.remaining > 0.004;
+   const isSale = doc.type === "sale";
+  const label = isSale ? "Venta" : "Cotización";
+  const folio = isSale ? saleFolioFromId(doc.id) : folioFromId(doc.id);
+  const canIssue = !!summary && !summary.canceled && summary.remaining > 0.004;
 
   return (
     <div className="fixed inset-0 z-50">
@@ -32,8 +37,8 @@ export function QuoteBillingDrawer({ quoteId, onClose, actions }: Props) {
       <aside className="absolute right-0 top-0 flex h-full w-full max-w-xl animate-in slide-in-from-right flex-col bg-slate-50 shadow-2xl duration-300">
         <header className="flex items-center justify-between border-b border-slate-200 bg-white px-5 py-4">
           <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Cotización</p>
-            <h2 className="text-lg font-semibold text-slate-900">{folioFromId(quoteId)}</h2>
+            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</p>
+            <h2 className="text-lg font-semibold text-slate-900">{folio}</h2>
           </div>
           <div className="flex items-center gap-2">
             {summary && <BillingStatusBadge state={getBillingState(summary.subtotal, summary.invoiced)} />}
@@ -55,9 +60,9 @@ export function QuoteBillingDrawer({ quoteId, onClose, actions }: Props) {
 
           {summary && (
             <>
-              {summary.quoteCanceled && (
+              {summary.canceled && (
                 <div className="flex items-center gap-2 rounded-2xl bg-red-50 p-3 text-sm font-medium text-red-700 ring-1 ring-red-200">
-                  <Ban className="h-4 w-4" /> Cotización cancelada
+                  <Ban className="h-4 w-4" />  {label} cancelada
                 </div>
               )}
 
@@ -135,7 +140,12 @@ export function QuoteBillingDrawer({ quoteId, onClose, actions }: Props) {
       </aside>
 
       {issueOpen && summary && (
-        <IssueInvoiceModal summary={summary} onClose={() => setIssueOpen(false)} onIssue={actions.issue} onIssued={reload} />
+       <IssueInvoiceModal
+          summary={summary}
+          onClose={() => setIssueOpen(false)}
+          onIssue={(payload) => actions.issue(summary.type, summary.documentId, payload)}
+          onIssued={reload}
+        />
       )}
     </div>
   );
