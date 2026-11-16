@@ -1,5 +1,5 @@
 import { Search, X } from "lucide-react";
-import type { BillingSourceFilter,  BillingStatusFilter } from "../../types/invoice";
+import type { BillingSourceFilter, BillingStatusFilter } from "../../types/invoice";
 
 const STATUS_SEGMENTS: { value: BillingStatusFilter; label: string }[] = [
   { value: "all", label: "Todas" },
@@ -36,6 +36,7 @@ function Segments<T extends string>({
     <div className="flex overflow-x-auto rounded-xl bg-slate-100 p-1">
       {options.map((s) => (
         <button
+          type="button"
           key={s.value}
           onClick={() => onChange(s.value)}
           className={`whitespace-nowrap rounded-lg px-3.5 py-1.5 text-sm font-medium transition ${
@@ -57,11 +58,12 @@ export function BillingFilters({ search, onSearchChange, status, onStatusChange,
         <input
           value={search}
           onChange={(e) => onSearchChange(e.target.value.toUpperCase())}
-          placeholder="Buscar por  cliente…"
+          placeholder="Buscar por cliente…"
           className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-9 pr-9 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100"
         />
         {search && (
           <button
+            type="button"
             onClick={() => onSearchChange("")}
             className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
             aria-label="Limpiar búsqueda"
@@ -70,32 +72,8 @@ export function BillingFilters({ search, onSearchChange, status, onStatusChange,
           </button>
         )}
       </div>
-      <div className="flex overflow-x-auto rounded-xl bg-slate-100 p-1">
-        {STATUS_SEGMENTS.map((s) => (
-          <button
-            key={s.value}
-            onClick={() => onStatusChange(s.value)}
-            className={`whitespace-nowrap rounded-lg px-3.5 py-1.5 text-sm font-medium transition ${
-              status === s.value ? "bg-white text-blue-700 shadow-sm" : "text-slate-600 hover:text-slate-900"
-            }`}
-          >
-            {s.label}
-          </button>
-        ))}
-      </div>
-      <div className="flex overflow-x-auto rounded-xl bg-slate-100 p-1">
-        {TYPE_SEGMENTS.map((t) => (
-          <button
-            key={t.value}
-            onClick={() => onTypeChange(t.value)}
-            className={`whitespace-nowrap rounded-lg px-3.5 py-1.5 text-sm font-medium transition ${
-              type === t.value ? "bg-white text-blue-700 shadow-sm" : "text-slate-600 hover:text-slate-900"
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
+      <Segments options={STATUS_SEGMENTS} value={status} onChange={onStatusChange} />
+      <Segments options={TYPE_SEGMENTS} value={type} onChange={onTypeChange} />
     </div>
   );
 }

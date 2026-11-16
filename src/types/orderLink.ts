@@ -1,4 +1,4 @@
-export const DETAIL_GENDERS = ["M", "F"] as const;
+export const DETAIL_GENDERS = ["M", "F", "U"] as const;
 export type DetailGender = (typeof DETAIL_GENDERS)[number];
 
 export interface AddOrderLinkResponse {

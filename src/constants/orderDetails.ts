@@ -5,6 +5,7 @@ export const PIECE_SIZES: string[] = ["2", "3", "4", "6", "8", "10","12","14","1
 export const GENDER_LABELS: Record<DetailGender, string> = {
   M: "Masculino",
   F: "Femenino",
+  U: "Unisex",
 };
 
 export const GENDER_OPTIONS = DETAIL_GENDERS.map((value) => ({

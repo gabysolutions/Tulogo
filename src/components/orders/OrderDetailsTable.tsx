@@ -27,6 +27,7 @@ const SIZES: OrderSize[] = ["2","3","4","6","8","10","12","14","16","XCH", "CH",
 const GENDERS: { value: OrderGender; label: string }[] = [
   { value: "M", label: "Masculino" },
   { value: "F", label: "Femenino" },
+   { value: "U", label: "Unisex" },
 ];
 
 const EMPTY_ADD_FORM = {

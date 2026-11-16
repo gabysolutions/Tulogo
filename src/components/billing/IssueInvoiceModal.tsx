@@ -109,7 +109,12 @@ const submittingRef = useRef(false);
   const ok = await Swal.fire({
     title: "¿Emitir factura?",
     icon: "question",
-    html: `...`,   // igual que lo tienes
+    html: `<div style="text-align:left;font-size:14px;line-height:1.8">
+      <b>Modo:</b> ${INVOICE_MODE_LABEL[mode]}<br/>
+      <b>Subtotal:</b> ${formatMoney(t.subtotal)}<br/>
+      <b>IVA 16%:</b> ${formatMoney(t.iva)}<br/>
+      <b>Total:</b> ${formatMoney(t.total)}<br/>
+      <b>Uso del CFDI:</b> ${cfdiUse} ${useName}</div>`,
     showCancelButton: true,
     confirmButtonText: "Emitir",
     cancelButtonText: "Revisar",

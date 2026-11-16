@@ -6,7 +6,7 @@ import type { AddOrderDetailPayload, OrderSize, OrderGender } from "../types/ord
 const HEADERS = ["Artículo", "Nombre en prenda", "Número", "Talla", "Corte"];
 
 const VALID_SIZES: OrderSize[] = ["2" , "3" , "4" , "6" , "8" , "10" , "12" , "14" , "16" , "XCH" , "CH" , "M", "G", "XL", "2XL", "3XL", "4XL", "5XL", "6XL"];
-const VALID_GENDERS: OrderGender[] = ["M", "F"];
+const VALID_GENDERS: OrderGender[] = ["M", "F", "U"];
 
 const MAX_ROWS = 500; 
 
@@ -134,7 +134,7 @@ export async function parseOrderDetailsFile(file: File, articles: ArticleListIte
       return;
     }
     if (!VALID_GENDERS.includes(genderRaw as OrderGender)) {
-      errors.push(`Fila ${rowNumber}: corte inválido ("${genderRaw}"). Usa M o F.`);
+      errors.push(`Fila ${rowNumber}: corte inválido ("${genderRaw}"). Usa U, M o F.`);
       return;
     }
 

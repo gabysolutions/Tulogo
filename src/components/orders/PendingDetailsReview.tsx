@@ -8,10 +8,10 @@ import { GENDER_LABELS } from "../../constants/orderDetails";
 
 interface Props {
   order: Order;
-  onReviewed: () => Promise<unknown> | void; // recarga la orden
+  onReviewed: () => Promise<unknown> | void; 
 }
 
-// Con tantas piezas o más, la tabla empieza colapsada
+
 const COLLAPSE_FROM = 6;
 
 export function PendingDetailsReview({ order, onReviewed }: Props) {

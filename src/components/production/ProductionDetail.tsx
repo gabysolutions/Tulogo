@@ -24,7 +24,7 @@ import { UpdateStatusDialog } from "../../components/production/UpdateStatusDial
 import { getApiErrorStatus } from "../../utils/apiError";
 const PRODUCTION_PATH = "/produccion";
 
-const GENDER_LABEL: Record<"M" | "F", string> = { M: "Masculino", F: "Femenino" };
+const GENDER_LABEL: Record<"M" | "F"| "U", string> = { M: "Masculino", F: "Femenino", U: "Unisex"  };
 
 function Meta({ label, value }: { label: string; value: string }) {
   return (
