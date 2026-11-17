@@ -35,15 +35,16 @@ const EMPTY_ADD_FORM = {
   nickname: "",
   number: "",
   size: "" as OrderSize | "",
-  gender: "" as OrderGender | "",
+  gender: "U" as OrderGender,
   observation: "",
 };
+
 
 const EMPTY_EDIT_FORM = {
   nickname: "",
   number: "",
   size: "" as OrderSize | "",
-  gender: "" as OrderGender | "",
+  gender: "U" as OrderGender,
   observation: "",
 };
 
@@ -87,17 +88,17 @@ export default function OrderDetailsTable({ order, onAddDetail, onUpdateDetail, 
   async function handleAddSubmit() {
     if (!addForm.articleId) return setAddError("Selecciona el artículo.");
     if (!addForm.size) return setAddError("Selecciona la talla.");
-    if (!addForm.gender) return setAddError("Selecciona el género.");
+  
 
     setSubmitting(true);
     try {
       await onAddDetail({
-        articleId: Number(addForm.articleId),
-        nickname: addForm.nickname.trim(),
-        number: addForm.number.trim() || undefined,
-        size: addForm.size,
-        gender: addForm.gender,
-        observation: addForm.observation.trim() || undefined,
+      articleId: Number(addForm.articleId),
+      nickname: addForm.nickname.trim() || undefined,
+      number: addForm.number.trim() || undefined,
+      size: addForm.size,
+      gender: addForm.gender || "U",
+      observation: addForm.observation.trim() || undefined,
       });
       
       setAddForm({ ...EMPTY_ADD_FORM, articleId: addForm.articleId });
@@ -136,13 +137,12 @@ export default function OrderDetailsTable({ order, onAddDetail, onUpdateDetail, 
 
   async function handleEditSubmit() {
     if (editingId === null) return;
-    if (!editForm.nickname.trim()) return setEditError("El apodo es obligatorio.");
     if (!editForm.size) return setEditError("Selecciona la talla.");
     if (!editForm.gender) return setEditError("Selecciona el género.");
 
     try {
       await onUpdateDetail(editingId, {
-        nickname: editForm.nickname.trim(),
+        nickname: editForm.nickname.trim()|| undefined,
         number: editForm.number.trim() || undefined,
         size: editForm.size,
         gender: editForm.gender,
@@ -291,7 +291,7 @@ export default function OrderDetailsTable({ order, onAddDetail, onUpdateDetail, 
               onChange={(e) => patchAddForm({ articleId: e.target.value ? Number(e.target.value) : "" })}
               className="col-span-2 rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-slate-500 sm:col-span-2"
             >
-              <option value="">Artículo*</option>
+              <option value="">Artículo</option>
               {orderArticles.map((a) => (
                 <option key={a.id} value={a.id}>
                   {a.article}
@@ -301,7 +301,7 @@ export default function OrderDetailsTable({ order, onAddDetail, onUpdateDetail, 
             <input
               value={addForm.nickname}
               onChange={(e) => patchAddForm({ nickname: e.target.value })}
-              placeholder="Nombre en prenda*"
+              placeholder="Nombre en prenda"
               className="col-span-2 rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-slate-500 sm:col-span-2"
             />
             <input
@@ -315,7 +315,7 @@ export default function OrderDetailsTable({ order, onAddDetail, onUpdateDetail, 
               onChange={(e) => patchAddForm({ size: e.target.value as OrderSize })}
               className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
             >
-              <option value="">Talla*</option>
+              <option value="">Talla</option>
               {SIZES.map((s) => (
                 <option key={s} value={s}>
                   {s}
@@ -327,7 +327,7 @@ export default function OrderDetailsTable({ order, onAddDetail, onUpdateDetail, 
               onChange={(e) => patchAddForm({ gender: e.target.value as OrderGender })}
               className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
             >
-              <option value="">Corte*</option>
+              <option value="">Corte</option>
               {GENDERS.map((g) => (
                 <option key={g.value} value={g.value}>
                   {g.label}
@@ -442,7 +442,7 @@ export default function OrderDetailsTable({ order, onAddDetail, onUpdateDetail, 
                       <input
                         value={editForm.nickname}
                         onChange={(e) => setEditForm((p) => ({ ...p, nickname: e.target.value }))}
-                        placeholder="Nombre en prenda*"
+                        placeholder="Nombre en prenda"
                         className="w-full rounded-lg border border-gray-300 px-2 py-1.5 text-sm outline-none focus:border-slate-500"
                       />
                     </td>

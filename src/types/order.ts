@@ -247,7 +247,7 @@ export function isCompleted(order: Order | OrderListItem): boolean {
 
 export interface AddOrderDetailPayload {
   articleId: number;
-  nickname: string;
+  nickname?: string;
   number?: string;
   size: OrderSize;
   gender: OrderGender;
@@ -255,7 +255,7 @@ export interface AddOrderDetailPayload {
 }
 
 export interface UpdateOrderDetailPayload {
-  nickname: string;
+  nickname?: string;
   number?: string;
   size: OrderSize;
   gender: OrderGender;

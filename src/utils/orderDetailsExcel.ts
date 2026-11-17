@@ -5,15 +5,15 @@ import type { AddOrderDetailPayload, OrderSize, OrderGender } from "../types/ord
 
 const HEADERS = ["Artículo", "Nombre en prenda", "Número", "Talla", "Corte"];
 
-const VALID_SIZES: OrderSize[] = ["2" , "3" , "4" , "6" , "8" , "10" , "12" , "14" , "16" , "XCH" , "CH" , "M", "G", "XL", "2XL", "3XL", "4XL", "5XL", "6XL"];
-const VALID_GENDERS: OrderGender[] = ["M", "F", "U"];
+const VALID_SIZES: OrderSize[] = ["2", "3", "4", "6", "8", "10", "12", "14", "16", "XCH", "CH", "M", "G", "XL", "2XL", "3XL", "4XL", "5XL", "6XL"];
+const VALID_GENDERS: OrderGender[] = ["U", "M", "F"];
+const DEFAULT_GENDER: OrderGender = "U";
 
-const MAX_ROWS = 500; 
+const MAX_ROWS = 500;
 
 export async function downloadOrderDetailsTemplate(articles: ArticleListItem[], quoteId?: number) {
   const wb = new ExcelJS.Workbook();
 
- 
   const ws = wb.addWorksheet("Piezas", { views: [{ state: "frozen", ySplit: 1 }] });
   ws.columns = [
     { header: HEADERS[0], width: 28 }, // A Artículo
@@ -24,10 +24,8 @@ export async function downloadOrderDetailsTemplate(articles: ArticleListItem[], 
   ];
   ws.getRow(1).font = { bold: true };
 
+  ws.addRow([articles[0]?.description.trim() ?? "", "MESSI", "10", "M", "U"]);
 
-  ws.addRow([articles[0]?.description.trim() ?? "", "MESSI", "10", "M", "M"]);
-
-  
   const wsCatalog = wb.addWorksheet("Catalogo");
   wsCatalog.getCell("A1").value = "Artículos";
   articles.forEach((a, i) => {
@@ -53,7 +51,7 @@ export async function downloadOrderDetailsTemplate(articles: ArticleListItem[], 
       formulae: [`"${VALID_SIZES.join(",")}"`],
       showErrorMessage: true,
       errorTitle: "Talla inválida",
-      error: "Usa XS, S, M, L o XL.",
+      error: `Usa una de estas tallas: ${VALID_SIZES.join(", ")}.`,
     };
     ws.getCell(`E${r}`).dataValidation = {
       type: "list",
@@ -61,23 +59,22 @@ export async function downloadOrderDetailsTemplate(articles: ArticleListItem[], 
       formulae: [`"${VALID_GENDERS.join(",")}"`],
       showErrorMessage: true,
       errorTitle: "Corte inválido",
-      error: "Usa M o F.",
+      error: "Usa U (Unisex), M (Masculino) o F (Femenino).",
     };
   }
 
- 
   const wsInfo = wb.addWorksheet("Instrucciones");
-  wsInfo.columns = [{ width: 60 }];
+  wsInfo.columns = [{ width: 70 }];
   [
     "Instrucciones",
     "- No cambies los encabezados de la hoja 'Piezas'.",
     "- Artículo, Talla y Corte se eligen de la lista desplegable.",
-    "- Artículo y Nombre en prenda son obligatorios.",
-    "- Número es opcional.",
+    "- Artículo y Talla son obligatorios.",
+    "- Nombre en prenda y Número son opcionales.",
+    "- Corte: U = Unisex, M = Masculino, F = Femenino. Si lo dejas vacío se usa Unisex.",
     "- Borra la fila de ejemplo antes de subir el archivo.",
   ].forEach((t) => wsInfo.addRow([t]));
   wsInfo.getRow(1).font = { bold: true };
-
 
   const buffer = await wb.xlsx.writeBuffer();
   const blob = new Blob([buffer], {
@@ -110,18 +107,13 @@ export async function parseOrderDetailsFile(file: File, articles: ArticleListIte
   const errors: string[] = [];
 
   rows.forEach((row, i) => {
-    const rowNumber = i + 2; 
+    const rowNumber = i + 2;
 
     const articleName = String(row["Artículo"] ?? row["Articulo"] ?? "").trim();
     const nickname = String(row["Nombre en prenda"] ?? "").trim();
     const sizeRaw = String(row["Talla"] ?? "").trim().toUpperCase();
-    const genderRaw = String(row["Corte"] ?? row["Corte"] ?? "").trim().toUpperCase();
+    const genderRaw = String(row["Corte"] ?? "").trim().toUpperCase();
     const numberRaw = String(row["Número"] ?? row["Numero"] ?? "").trim();
-
-    if (!nickname) {
-      errors.push(`Fila ${rowNumber}: falta el nombre en prenda.`);
-      return;
-    }
 
     const article = articles.find((a) => a.description.trim().toLowerCase() === articleName.toLowerCase());
     if (!article) {
@@ -130,20 +122,23 @@ export async function parseOrderDetailsFile(file: File, articles: ArticleListIte
     }
 
     if (!VALID_SIZES.includes(sizeRaw as OrderSize)) {
-      errors.push(`Fila ${rowNumber}: talla inválida ("${sizeRaw}"). Usa XS, S, M, L o XL.`);
+      errors.push(`Fila ${rowNumber}: talla inválida ("${sizeRaw}"). Usa: ${VALID_SIZES.join(", ")}.`);
       return;
     }
-    if (!VALID_GENDERS.includes(genderRaw as OrderGender)) {
+
+    // Corte vacío => Unisex por defecto
+    const gender = (genderRaw || DEFAULT_GENDER) as OrderGender;
+    if (!VALID_GENDERS.includes(gender)) {
       errors.push(`Fila ${rowNumber}: corte inválido ("${genderRaw}"). Usa U, M o F.`);
       return;
     }
 
     details.push({
       articleId: article.id,
-      nickname,
+      nickname: nickname || undefined,
       number: numberRaw || undefined,
       size: sizeRaw as OrderSize,
-      gender: genderRaw as OrderGender,
+      gender,
     });
   });
 
