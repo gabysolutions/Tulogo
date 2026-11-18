@@ -37,16 +37,16 @@ export default function AddArticlesModal({
   onClose,
   onSave,
 }: Props) {
-  // piezas a agregar por detalle: { [detailId]: cantidad }
+
   const [qtys, setQtys] = useState<Record<number, number>>({});
   const [saving, setSaving] = useState(false);
 
-  // Solo se reinicia al abrir otra cotización
+ 
   useEffect(() => {
     setQtys({});
   }, [quote?.id]);
 
-  // Filas derivadas de los artículos que ya tiene la cotización
+ 
   const rows = useMemo(() => {
     if (!quote) return [];
 
@@ -100,6 +100,7 @@ export default function AddArticlesModal({
           fabricTypeId: r.fabricTypeId,
           qty: qtys[r.detailId],
           price: r.unitPrice,
+          
         })),
       });
     } finally {

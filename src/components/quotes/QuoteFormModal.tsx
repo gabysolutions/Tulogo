@@ -21,6 +21,8 @@ interface LineItem {
   desc: string;
   qty: number;
   price: number;
+   note: string;
+  
 }
 
 export interface QuoteFormSavePayload {
@@ -246,12 +248,12 @@ function ItemRow({
         </Field>
       </div>
 
-      <Field label="Notas ">
+      <Field label="Notas">
         <textarea
           className={`${inputCls} min-h-[56px] resize-y`}
           placeholder="Ej: Color azul marino con franja blanca."
-          value={item.desc}
-          onChange={(e) => onChange(item.id, "desc", e.target.value)}
+          value={item.note}
+          onChange={(e) => onChange(item.id, "note", e.target.value)}
         />
       </Field>
 
@@ -320,6 +322,7 @@ export default function QuoteFormModal({
       desc: "",
       qty: 0,
       price: 0,
+      note:"",
     },
   ]);
   const [ivaEnabled, setIvaEnabled] = useState(false);
@@ -409,6 +412,7 @@ const minAnticipo = total * 0.5;
         desc: "",
         qty: 0,
         price: 0,
+        note:"",
       },
     ]);
   }, []);
@@ -448,6 +452,7 @@ const minAnticipo = total * 0.5;
         desc: "",
         qty: 0,
         price: 0,
+        note:"",
       },
     ]);
     setIvaEnabled(false);

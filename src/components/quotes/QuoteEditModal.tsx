@@ -21,7 +21,7 @@ interface LineItem {
   articleId: number | null;
   category: string;
   fabricTypeId: number | null;
-  desc: string;
+  note: string;
   qty: number;
   price: number;
 }
@@ -57,7 +57,6 @@ interface ValidationErrors {
 
 let nextId = 1;
 
-// Acepta true, 1 o "1" (según lo que mande el backend)
 const toBool = (v: unknown): boolean => v === true || v === 1 || v === "1";
 
 function detailsToItems(
@@ -76,7 +75,7 @@ function detailsToItems(
       articleId: article?.id ?? null,
       category: detail.category,
       fabricTypeId: fabricType?.id ?? null,
-      desc: "",
+      note: detail.note ?? "",
       qty: detail.amount,
       price: detail.unitPrice,
     };
@@ -186,6 +185,7 @@ const total = taxableBase + ivaAmount;
         articleId: null,
         category: "",
         fabricTypeId: null,
+        note: "",
         desc: "",
         qty: 0,
         price: 0,

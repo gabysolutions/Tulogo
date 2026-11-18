@@ -112,6 +112,8 @@ const Quotes = () => {
           amount: item.qty,
           unitPrice: item.price,
           subtotal: item.qty * item.price,
+           note: item.note,
+          
         })),
       });
 
@@ -143,6 +145,7 @@ const Quotes = () => {
       fabricTypeId: number | null;
       qty: number;
       price: number;
+      note?: string;
     }[];
     iva: boolean;
     sending: boolean;
@@ -163,6 +166,7 @@ const Quotes = () => {
           amount: i.qty,
           unitPrice: i.price,
           subtotal: i.qty * i.price,
+          note:i.note
         })),
       });
 
@@ -262,6 +266,7 @@ const Quotes = () => {
           amount: i.qty,
           unitPrice: i.price,
           subtotal: i.qty * i.price,
+          
         })),
       });
 

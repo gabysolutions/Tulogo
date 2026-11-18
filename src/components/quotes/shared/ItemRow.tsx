@@ -9,7 +9,7 @@ interface LineItem {
   articleId: number | null;
   category: string;
   fabricTypeId: number | null;
-  desc: string;
+  note: string;
   qty: number;
   price: number;
 }
@@ -127,12 +127,12 @@ export default function ItemRow({
         </select>
       </Field>
 
-      <Field label="Notas (tallas, colores, diseño)">
+      <Field label="Notas (tallas, colores, diseño) (opcional)">
         <textarea
           className={`${inputCls} min-h-[56px] resize-y`}
           placeholder="Ej: Color azul marino con franja blanca."
-          value={item.desc}
-          onChange={(e) => onChange(item.id, "desc", e.target.value)}
+          value={item.note}
+          onChange={(e) => onChange(item.id, "note", e.target.value)}
         />
       </Field>
 

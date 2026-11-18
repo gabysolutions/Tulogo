@@ -8,6 +8,7 @@ export interface QuoteDetail {
   amount: number;
   unitPrice: number;
   subtotal: number;
+  note?:string| null;
 }
 
 export interface Quote {
@@ -66,6 +67,7 @@ export interface QuoteArticlePayload {
   amount: number;
   unitPrice: number;
   subtotal: number;
+  note?:string
 }
 
 export interface QuoteCreatePayload {

@@ -12,6 +12,7 @@ import type {
   QuoteStatus,
   QuoteAcceptResponse,
     QuoteIvaResponse,
+    QuoteArticlePayload
 } from "../types/quote";
 
 
@@ -25,6 +26,7 @@ interface QuoteDetailDTO {
   amount: number;
   unit_price: string;
   subtotal: string;
+ note?: string | null;
 }
 
 interface QuoteListItemDTO {
@@ -63,6 +65,7 @@ interface QuoteByIdDetailDTO {
   amount: number;
   unit_price: string;
   subtotal: string;
+  note?: string | null;
 }
 
 interface QuoteByIdDTO {
@@ -93,7 +96,12 @@ function folioFromId(id: number): string {
   return `COT-${String(id).padStart(4, "0")}`;
 }
 
-
+function buildArticles(articles: QuoteArticlePayload[]) {
+  return articles.map((a) => ({
+    ...a,
+    note: a.note?.trim() || undefined,
+  }));
+}
 
 function mapDetail(dto: QuoteDetailDTO): QuoteDetail {
   return {
@@ -106,6 +114,7 @@ function mapDetail(dto: QuoteDetailDTO): QuoteDetail {
     amount: dto.amount,
     unitPrice: Number(dto.unit_price),
     subtotal: Number(dto.subtotal),
+   note: dto.note?.trim() || undefined,
   };
 }
 
@@ -120,6 +129,7 @@ function mapByIdDetail(dto: QuoteByIdDetailDTO): QuoteDetail {
     amount: dto.amount,
     unitPrice: Number(dto.unit_price),
     subtotal: Number(dto.subtotal),
+    note: dto.note?.trim() || undefined,
   };
 }
 
@@ -178,7 +188,7 @@ function buildCreateBody(payload: QuoteCreatePayload) {
     total: payload.total,
     advance: payload.advance,
     priority: payload.priority.toLowerCase(),
-    articles: payload.articles,
+      articles: buildArticles(payload.articles),
   };
 }
 
@@ -190,13 +200,13 @@ function buildUpdateBody(payload: QuoteUpdatePayload) {
     shippingAmount: payload.sending ? payload.shippingAmount : 0,
     total: payload.total,
     priority: payload.priority.toLowerCase(),
-    articles: payload.articles,
+    articles: buildArticles(payload.articles),
   };
 }
 function buildAddArticlesBody(payload: QuoteAddArticlesPayload) {
   return {
     totalAdded: payload.totalAdded,
-    articles: payload.articles,
+    articles: buildArticles(payload.articles),
   };
 }
 
