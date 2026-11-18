@@ -41,7 +41,6 @@ export interface QuoteFormSavePayload {
 
 interface Props {
   open: boolean;
-  isAdmin: boolean;
   clients: Client[];
   articles: ArticleListItem[];
   fabricTypes: FabricType[];
@@ -298,7 +297,6 @@ function ItemRow({
 
 export default function QuoteFormModal({
   open,
-  isAdmin,
   articles,
   fabricTypes,
   onClose,
@@ -606,7 +604,7 @@ const minAnticipo = total * 0.5;
                 label="Envío"
               />
 
-              {envioEnabled && isAdmin && (
+              {envioEnabled &&  (
                 <Field label="Costo de envío" className="max-w-[200px]">
                   <input
                     className={inputCls}
