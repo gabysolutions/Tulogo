@@ -18,7 +18,7 @@ import { useQuotes } from "../../hooks/useQuotes";
 import { useArticleCatalog } from "../../hooks/useArticleCatalog";
 import { useFabricTypes } from "../../hooks/useFabricTypes";
 import { useClients } from "../../hooks/useClients";
-import { useAuth } from "../../context/AuthContext";
+
 import { createQuickClient } from "../../services/client.service";
 
 import type { AxiosError } from "axios";
@@ -51,13 +51,13 @@ const Quotes = () => {
     addQuoteIva,
     addQuoteArticles,
   } = useQuotes();
-  const { hasRole } = useAuth();
+  
  const { articles, refetch: refetchArticles } = useArticleCatalog();
   const { fabricTypes } = useFabricTypes();
   const { clients } = useClients();
   
   
-  const isAdmin = hasRole("administrador");
+  
 
   const [openModal, setOpenModal] = useState(false);
   const [editingQuote, setEditingQuote] = useState<Quote | null>(null);
@@ -356,7 +356,7 @@ const Quotes = () => {
 
       <QuoteFormModal
         open={openModal}
-        isAdmin={isAdmin}
+        
         clients={clients}
         articles={articles}
         fabricTypes={fabricTypes}
@@ -366,7 +366,6 @@ const Quotes = () => {
 
       <QuoteEditModal
         open={editingQuote !== null}
-        isAdmin={isAdmin}
         quote={editingQuote}
         articles={articles}
         fabricTypes={fabricTypes}

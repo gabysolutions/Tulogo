@@ -28,7 +28,6 @@ interface LineItem {
 
 interface Props {
   open: boolean;
-  isAdmin: boolean;
   quote: Quote | null;
   articles: ArticleListItem[];
   fabricTypes: FabricType[];
@@ -106,7 +105,6 @@ function getInitialShippingCost(quote: Quote): number {
 
 export default function QuoteEditModal({
   open,
-  isAdmin,
   quote,
   articles,
   fabricTypes,
@@ -235,8 +233,6 @@ const total = taxableBase + ivaAmount;
 
   if (!open || !quote) return null;
 
-  // Pendiente: edición completa. Aceptada: solo cuando se habilite.
-  // Aceptada/liquidada hoy: únicamente facturación (agregar IVA).
   const fullEdit =
     quote.status === QuoteStatus.PENDIENTE ||
     (ACCEPTED_FULL_EDIT_ENABLED && quote.status === QuoteStatus.ACEPTADA);
@@ -433,7 +429,7 @@ const total = taxableBase + ivaAmount;
                 label="Envío"
               />
 
-              {envioEnabled && isAdmin && (
+              {envioEnabled && (
                 <Field label="Costo de envío" className="max-w-[200px]">
                   <input
                     className={inputCls}
