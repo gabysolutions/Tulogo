@@ -5,7 +5,7 @@ import { Loader2, PackageSearch } from "lucide-react";
 
 import { useProductionOrders } from "../../hooks/useProduction";
 import { useOrderMovements } from "../../hooks/Useordermovements";
-import { useOrderPdf } from "../../hooks/Useorderpdf";
+
 import { updateOrderStatusService } from "../../services/orders.service";
 import type { Priority, ProductionOrderListItem } from "../../types/order";
 
@@ -80,7 +80,7 @@ useEffect(() => {
   } = useOrderMovements(historyOrder?.id, historyOpen);
 
  
-  const { openPdf, loadingId: printingId } = useOrderPdf();
+
 
  
   const sortedOrders = useMemo(() => {
@@ -135,9 +135,7 @@ useEffect(() => {
     setHistoryOrder(order);
     setHistoryOpen(true);
   }
-  function handlePrint(order: ProductionOrderListItem) {
-    openPdf(order.id);
-  }
+  
 
   const showInitialLoader = loading && orders.length === 0;
   const showEmpty = !loading && !error && sortedOrders.length === 0;
@@ -217,11 +215,11 @@ useEffect(() => {
                 key={order.id}
                 order={order}
                 allowedStages={allowedStages}
-                printing={printingId === order.id}
+                
                 onViewDetails={openDetails}
                 onUpdateStatus={openStatus}
                 onViewHistory={openHistory}
-                onPrint={handlePrint}
+                
               />
             ))}
           </div>
