@@ -1,7 +1,6 @@
 import {
   Eye,
   History,
-  Printer,
   ArrowRightCircle,
   Hash,
   Building2,
@@ -9,7 +8,6 @@ import {
   Package2,
   CalendarDays,
   AlertTriangle,
-  Loader2,
 } from "lucide-react";
 import type { ProductionOrderListItem } from "../../types/order";
 import { getStage, isCompleted, PRIORITY_META, CONFIG_STAGE_ID } from "../../types/order";
@@ -17,15 +15,14 @@ import { deliveryLabel, deliveryStatus, formatDate } from "../../utils/productio
 import { DesignCarousel } from "./DesignCarousel";
 import { ProgressTrack } from "./ProgressTrack";
 import { canMoveFromStage } from "../../constants/permissions";
+import { PrintOrderButton } from "./PrintOrderButton";
 
 interface Props {
   order: ProductionOrderListItem;
-  printing?: boolean;
   allowedStages: number[];
   onViewDetails: (order: ProductionOrderListItem) => void;
   onUpdateStatus: (order: ProductionOrderListItem) => void;
   onViewHistory: (order: ProductionOrderListItem) => void;
-  onPrint: (order: ProductionOrderListItem) => void;
 }
 
 function InfoRow({ icon: Icon, label, value }: { icon: typeof Hash; label: string; value: string }) {
@@ -42,12 +39,10 @@ function InfoRow({ icon: Icon, label, value }: { icon: typeof Hash; label: strin
 
 export function OrderCard({
   order,
-  printing = false,
-    allowedStages,
+  allowedStages,
   onViewDetails,
   onUpdateStatus,
   onViewHistory,
-  onPrint,
 }: Props) {
   const stage = getStage(order.status);
   const priority = PRIORITY_META[order.priority];
@@ -56,7 +51,6 @@ export function OrderCard({
 
   const folio = `COT-${String(order.quoteId).padStart(4, "0")}`;
 
-  
   const pendingPieces = Math.max(0, order.numberPieces - order.piecesRegistered);
   const configIncomplete = order.status === CONFIG_STAGE_ID && pendingPieces > 0;
   const canAdvance = !completed && canMoveFromStage(allowedStages, order.status);
@@ -128,43 +122,34 @@ export function OrderCard({
 
       <div className="border-t border-slate-100" />
 
-    <div className="grid grid-cols-2 gap-2 p-3">
-          <button
-            onClick={() => onViewDetails(order)}
-            className="flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-          >
-            <Eye size={16} /> Ver detalles
-          </button>
+      <div className="grid grid-cols-2 gap-2 p-3">
+        <button
+          onClick={() => onViewDetails(order)}
+          className="flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+        >
+          <Eye size={16} /> Ver detalles
+        </button>
 
-          {canAdvance && (
-            <button
-              onClick={() => onUpdateStatus(order)}
-              disabled={configIncomplete}
-              title={configIncomplete ? "Completa la configuración de la orden para poder avanzar" : undefined}
-              className="flex items-center justify-center gap-1.5 rounded-lg bg-slate-800 px-3 py-2 text-sm font-medium text-white transition hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              <ArrowRightCircle size={16} /> Actualizar
-            </button>
-          )}
-
+        {canAdvance && (
           <button
-            onClick={() => onViewHistory(order)}
-            className="flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100"
+            onClick={() => onUpdateStatus(order)}
+            disabled={configIncomplete}
+            title={configIncomplete ? "Completa la configuración de la orden para poder avanzar" : undefined}
+            className="flex items-center justify-center gap-1.5 rounded-lg bg-slate-800 px-3 py-2 text-sm font-medium text-white transition hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-40"
           >
-            <History size={16} /> Historial
+            <ArrowRightCircle size={16} /> Actualizar
           </button>
+        )}
 
-          <button
-            onClick={() => onPrint(order)}
-            disabled={printing}
-            className={`flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40 ${
-              canAdvance ? "" : "col-span-2"
-            }`}
-          >
-            {printing ? <Loader2 size={16} className="animate-spin" /> : <Printer size={16} />}
-            {printing ? "Generando..." : "Imprimir"}
-          </button>
-        </div>
+        <button
+          onClick={() => onViewHistory(order)}
+          className="flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100"
+        >
+          <History size={16} /> Historial
+        </button>
+
+       <PrintOrderButton order={order} className={canAdvance ? "" : "col-span-2"} />
+      </div>
     </article>
   );
 }
