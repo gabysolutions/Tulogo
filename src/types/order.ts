@@ -1,7 +1,29 @@
+export const countPieces = (details: { quantity?: number }[]) =>
+  details.reduce((sum, d) => sum + (d.quantity ?? 1), 0);
+
 export interface OrderStage {
   id: number;
   label: string;
 }
+
+
+export const ORDER_TYPE = {
+  CUSTOM: "personalizado",
+  NO_CUSTOM: "sin personalizar",
+} as const;
+
+export type OrderType = (typeof ORDER_TYPE)[keyof typeof ORDER_TYPE];
+
+export const ORDER_TYPE_META: Record<OrderType, { label: string; badge: string }> = {
+  personalizado: {
+    label: "Personalizado",
+    badge: "bg-blue-50 text-blue-700 border-blue-200",
+  },
+  "sin personalizar": {
+    label: "Sin personalizar",
+    badge: "bg-slate-100 text-slate-600 border-slate-200",
+  },
+};
 
 export const STAGES: OrderStage[] = [
   { id: 1, label: "Diseño" },
@@ -90,9 +112,11 @@ export interface OrderListItemDTO {
   phone: string | null;
   designer: string;
   
+  piecesWithoutSize?: number;
   number_pieces: number;
   pieces_registered: number;
   delivery_date: string;
+  type: OrderType;
   priority: Priority;
   status: number;
   quoteId: number;
@@ -132,6 +156,7 @@ export interface OrderDetailItemDTO {
   number: string | null;
   size: OrderSize;
   gender: OrderGender;
+  quantity: number;
   observation: string | null;
 }
 
@@ -151,6 +176,7 @@ export interface OrderByIdDTO {
   delivery_date: string;
   advance_date: string | null;
   priority: Priority;
+  type: OrderType;
   status: number;
   quoteId: number;
   address: number | null;
@@ -182,6 +208,7 @@ export interface OrderListItem {
   numberPieces: number;
   piecesRegistered: number;
   deliveryDate: string;
+  type:OrderType;
   priority: Priority;
   status: number;
   quoteId: number;
@@ -207,6 +234,7 @@ export interface OrderDetailItem {
   number: string | null;
   size: OrderSize;
   gender: OrderGender;
+  quantity: number;
   observation: string | null;
 }
 
@@ -222,6 +250,7 @@ export interface Order {
   deliveryDate: string;
   advanceDate: string | null;
   priority: Priority;
+  type: OrderType;
   status: number;
   quoteId: number;
   addressId: number | null;
@@ -251,6 +280,7 @@ export interface AddOrderDetailPayload {
   number?: string;
   size: OrderSize;
   gender: OrderGender;
+   quantity?: number;
   observation?: string;
 }
 
@@ -259,6 +289,7 @@ export interface UpdateOrderDetailPayload {
   number?: string;
   size: OrderSize;
   gender: OrderGender;
+  quantity?: number;
   observation?: string;
 }
 
@@ -310,10 +341,15 @@ export interface SubmittedOrderDetailDTO {
   number: string | null;
   size: OrderSize;
   gender: OrderGender;
+  quantity?: number;
   observation: string | null;
 }
 
 export interface SubmittedOrderDetail extends SubmittedOrderDetailDTO {
   article: string;   
   category: string;
+}
+
+export interface UpdateOrderTypePayload {
+  type: OrderType;
 }

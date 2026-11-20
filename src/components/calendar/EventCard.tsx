@@ -28,7 +28,7 @@ export function EventCard({ order, onSelect, variant = "compact" }: Props) {
         <span
           className={cn(
             "truncate font-semibold text-foreground",
-            variant === "compact" ? "text-[11px]" : "text-sm",
+            variant === "compact" ? "text-[15px]" : "text-sm",
           )}
         >
           {quoteFolio(order.quoteId)}
@@ -42,7 +42,7 @@ export function EventCard({ order, onSelect, variant = "compact" }: Props) {
       <p
         className={cn(
           "truncate text-muted-foreground",
-          variant === "compact" ? "text-[11px]" : "text-sm",
+          variant === "compact" ? "text-[15px]" : "text-sm",
         )}
       >
         {order.client}
@@ -50,7 +50,7 @@ export function EventCard({ order, onSelect, variant = "compact" }: Props) {
       <div
         className={cn(
           "mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-muted-foreground",
-          variant === "compact" ? "text-[10px]" : "text-xs",
+          variant === "compact" ? "text-[15px]" : "text-xs",
         )}
       >
         <span>{order.numberPieces} piezas</span>

@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, AlertTriangle } from "lucide-react";
-
+import { countPieces, type OrderType } from "../../types/order";
 
 import { useOrderDetail } from "../../hooks/useOrderDetail";
 import { canAdvanceStage, missingPiecesCount } from "../../utils/orderValidation";
@@ -10,6 +10,7 @@ import OrderImages from "../../components/orders/OrderImages";
 import OrderHistory from "../../components/orders/OrderHistory";
 import OrderDetailsTable from "../../components/orders/OrderDetailsTable";
 import OrderSizes from "../../components/orders/OrderSizes";
+import { updateOrderTypeService } from "../../services/orders.service";
 
 import { useOrderAdvance } from "../../hooks/useOrderAdvance";
 
@@ -52,9 +53,13 @@ const { requestAdvance, addressModal } = useOrderAdvance(async () => {
   const blocked = !canAdvanceStage(order);
   const missing = missingPiecesCount(order);
 
-  
+  const handleChangeType = async (type: OrderType) => {
+      await updateOrderTypeService(order.id, { type });
+      await refresh();
+    }
 
   return (
+    
     <main className="mx-auto w-full max-w-7xl px-6 py-8">
       <button
         onClick={() => navigate("/pedidos")}
@@ -67,7 +72,7 @@ const { requestAdvance, addressModal } = useOrderAdvance(async () => {
         <div>
           <h2 className="text-lg font-bold text-slate-800">ORD-{String(order.id).padStart(4, "0")}</h2>
           <p className="text-sm text-slate-500">
-            {order.client} · {order.details.length} de {order.numberPieces} piezas capturadas
+           {order.client} · {countPieces(order.details)} de {order.numberPieces} piezas capturadas
           </p>
         </div>
 
@@ -95,7 +100,7 @@ const { requestAdvance, addressModal } = useOrderAdvance(async () => {
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-12">
         <div className="space-y-5 lg:col-span-8">
-          <OrderInformation order={order} />
+          <OrderInformation order={order} onChangeType={handleChangeType} />
           <OrderSizes order={order} />
           <OrderDetailsTable
             order={order}

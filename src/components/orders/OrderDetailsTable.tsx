@@ -13,6 +13,7 @@ import { GenerateOrderLink } from "./GenerateOrderLink";
 import { useArticles } from "../../hooks/useArticles";
 import { downloadOrderDetailsTemplate, parseOrderDetailsFile } from "../../utils/orderDetailsExcel";
 import { PendingDetailsReview } from "./PendingDetailsReview";
+import { ORDER_TYPE } from "../../types/order";
 
 
 interface Props {
@@ -36,6 +37,7 @@ const EMPTY_ADD_FORM = {
   number: "",
   size: "" as OrderSize | "",
   gender: "U" as OrderGender,
+  quantity: 1,
   observation: "",
 };
 
@@ -45,6 +47,7 @@ const EMPTY_EDIT_FORM = {
   number: "",
   size: "" as OrderSize | "",
   gender: "U" as OrderGender,
+  quantity: 1,
   observation: "",
 };
 
@@ -77,31 +80,35 @@ export default function OrderDetailsTable({ order, onAddDetail, onUpdateDetail, 
   if (!order) return null;
 
   const isConfiguring = order.status <= 1;
-  const missing = order.numberPieces - order.details.length;
-  const complete = missing <= 0;
+ const isCustom = order.type !== ORDER_TYPE.NO_CUSTOM;
+const captured = order.details.reduce((sum, d) => sum + (d.quantity ?? 1), 0);
+const missing = order.numberPieces - captured;
+const complete = missing <= 0;
  
   function patchAddForm(patch: Partial<typeof EMPTY_ADD_FORM>) {
     setAddForm((prev) => ({ ...prev, ...patch }));
     setAddError(null);
   }
 
-  async function handleAddSubmit() {
-    if (!addForm.articleId) return setAddError("Selecciona el artículo.");
-    if (!addForm.size) return setAddError("Selecciona la talla.");
-  
+ async function handleAddSubmit() {
+  if (!addForm.articleId) return setAddError("Selecciona el artículo.");
+  if (!addForm.size) return setAddError("Selecciona la talla.");
+  if (!addForm.gender) return setAddError("Selecciona el corte.");
+  if (!Number.isInteger(addForm.quantity) || addForm.quantity < 1)
+    return setAddError("La cantidad debe ser un entero mayor a 0.");
 
-    setSubmitting(true);
-    try {
-      await onAddDetail({
+  setSubmitting(true);
+  try {
+    await onAddDetail({
       articleId: Number(addForm.articleId),
-      nickname: addForm.nickname.trim() || undefined,
-      number: addForm.number.trim() || undefined,
+      nickname: isCustom ? addForm.nickname.trim() || undefined : undefined,
+      number: isCustom ? addForm.number.trim() || undefined : undefined,
       size: addForm.size,
-      gender: addForm.gender || "U",
-      observation: addForm.observation.trim() || undefined,
-      });
-      
-      setAddForm({ ...EMPTY_ADD_FORM, articleId: addForm.articleId });
+      gender: addForm.gender,
+      quantity: addForm.quantity,
+      observation: isCustom ? addForm.observation.trim() || undefined : undefined,
+    });
+    setAddForm({ ...EMPTY_ADD_FORM, articleId: addForm.articleId });
       setAddError(null);
       Swal.fire({
         title: "Pieza agregada",
@@ -120,10 +127,11 @@ export default function OrderDetailsTable({ order, onAddDetail, onUpdateDetail, 
   function startEdit(detail: OrderDetailItem) {
     setEditingId(detail.id);
     setEditForm({
-      nickname: detail.nickname,
+      nickname: detail.nickname ?? "",
       number: detail.number ?? "",
       size: detail.size,
       gender: detail.gender,
+      quantity:detail.quantity ?? 1,
       observation: detail.observation ?? "",
     });
     setEditError(null);
@@ -135,19 +143,22 @@ export default function OrderDetailsTable({ order, onAddDetail, onUpdateDetail, 
     setEditError(null);
   }
 
-  async function handleEditSubmit() {
-    if (editingId === null) return;
-    if (!editForm.size) return setEditError("Selecciona la talla.");
-    if (!editForm.gender) return setEditError("Selecciona el género.");
+ async function handleEditSubmit() {
+  if (editingId === null) return;
+  if (!editForm.size) return setEditError("Selecciona la talla.");
+  if (!editForm.gender) return setEditError("Selecciona el género.");
+  if (!Number.isInteger(editForm.quantity) || editForm.quantity < 1)
+    return setEditError("La cantidad debe ser un entero mayor a 0.");
 
-    try {
-      await onUpdateDetail(editingId, {
-        nickname: editForm.nickname.trim()|| undefined,
-        number: editForm.number.trim() || undefined,
-        size: editForm.size,
-        gender: editForm.gender,
-        observation: editForm.observation.trim() || undefined,
-      });
+  try {
+    await onUpdateDetail(editingId, {
+      nickname: editForm.nickname.trim() || undefined,
+      number: editForm.number.trim() || undefined,
+      size: editForm.size,
+      gender: editForm.gender,
+      quantity: editForm.quantity,
+      observation: editForm.observation.trim() || undefined,
+    });
       cancelEdit();
       Swal.fire({
         title: "Guardado",
@@ -285,62 +296,76 @@ export default function OrderDetailsTable({ order, onAddDetail, onUpdateDetail, 
       {/* FORMULARIO AGREGAR */}
       {isConfiguring && manualOpen && (
         <div className="rounded-2xl border border-slate-200 bg-white p-4">
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-6">
-            <select
-              value={addForm.articleId}
-              onChange={(e) => patchAddForm({ articleId: e.target.value ? Number(e.target.value) : "" })}
-              className="col-span-2 rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-slate-500 sm:col-span-2"
-            >
-              <option value="">Artículo</option>
-              {orderArticles.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.article}
-                </option>
-              ))}
-            </select>
+         <div className="grid grid-cols-2 gap-3 sm:grid-cols-6">
+          <select
+            value={addForm.articleId}
+            onChange={(e) => patchAddForm({ articleId: e.target.value ? Number(e.target.value) : "" })}
+            className="col-span-2 rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+          >
+            <option value="">Artículo</option>
+            {orderArticles.map((a) => (
+              <option key={a.id} value={a.id}>{a.article}</option>
+            ))}
+          </select>
+
+          {isCustom && (
+            <>
+              <input
+                value={addForm.nickname}
+                onChange={(e) => patchAddForm({ nickname: e.target.value })}
+                placeholder="Nombre en prenda"
+                className="col-span-2 rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+              />
+              <input
+                value={addForm.number}
+                onChange={(e) => patchAddForm({ number: e.target.value })}
+                placeholder="Número"
+                className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+              />
+            </>
+          )}
+
+          <select
+            value={addForm.size}
+            onChange={(e) => patchAddForm({ size: e.target.value as OrderSize })}
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+          >
+            <option value="">Talla</option>
+            {SIZES.map((s) => (<option key={s} value={s}>{s}</option>))}
+          </select>
+
+      
             <input
-              value={addForm.nickname}
-              onChange={(e) => patchAddForm({ nickname: e.target.value })}
-              placeholder="Nombre en prenda"
-              className="col-span-2 rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-slate-500 sm:col-span-2"
-            />
-            <input
-              value={addForm.number}
-              onChange={(e) => patchAddForm({ number: e.target.value })}
-              placeholder="Número"
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-            />
-            <select
-              value={addForm.size}
-              onChange={(e) => patchAddForm({ size: e.target.value as OrderSize })}
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-            >
-              <option value="">Talla</option>
-              {SIZES.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
-            <select
-              value={addForm.gender}
-              onChange={(e) => patchAddForm({ gender: e.target.value as OrderGender })}
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-            >
-              <option value="">Corte</option>
-              {GENDERS.map((g) => (
-                <option key={g.value} value={g.value}>
-                  {g.label}
-                </option>
-              ))}
-            </select>
+            type="number"
+            min={1}
+            step={1}
+            value={addForm.quantity}
+            onChange={(e) => patchAddForm({ quantity: Number(e.target.value) })}
+            onFocus={(e) => e.target.select()}
+            placeholder="Cantidad"
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+          />
+                  
+
+          {/* Corte: siempre visible */}
+          <select
+            value={addForm.gender}
+            onChange={(e) => patchAddForm({ gender: e.target.value as OrderGender })}
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+          >
+            <option value="">Corte</option>
+            {GENDERS.map((g) => (<option key={g.value} value={g.value}>{g.label}</option>))}
+          </select>
+
+          {isCustom && (
             <input
               value={addForm.observation}
               onChange={(e) => patchAddForm({ observation: e.target.value })}
               placeholder="Observación"
               className="col-span-2 rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-slate-500 sm:col-span-3"
             />
-          </div>
+          )}
+        </div>
 
           {addError && (
             <p className="mt-2 flex items-center gap-1.5 text-xs text-red-600">
@@ -402,7 +427,7 @@ export default function OrderDetailsTable({ order, onAddDetail, onUpdateDetail, 
         }`}
       >
         {complete ? (
-          <>Configuración completa: <b>{order.details.length}</b> de <b>{order.numberPieces}</b> piezas capturadas.</>
+          <>Configuración completa: <b>{captured}</b> de <b>{order.numberPieces}</b> piezas capturadas.</>
         ) : (
           <>Faltan <b>{missing}</b> piezas por capturar de <b>{order.numberPieces}</b> totales</>
         )}
@@ -417,6 +442,7 @@ export default function OrderDetailsTable({ order, onAddDetail, onUpdateDetail, 
               <th className="px-4 py-3 text-left">Nombre</th>
               <th className="px-4 py-3">Número</th>
               <th className="px-4 py-3">Talla</th>
+               <th className="px-4 py-3">Cantidad</th>
               <th className="px-4 py-3">Corte</th>
               <th className="px-4 py-3">Observaciones </th>
             </tr>
@@ -468,8 +494,18 @@ export default function OrderDetailsTable({ order, onAddDetail, onUpdateDetail, 
                         ))}
                       </select>
                     </td>
-
-                    <td className="px-2 py-3">
+                      
+                      <td className="px-2 py-3">
+                        <input
+                          type="number"
+                          min={1}
+                          value={editForm.quantity}
+                          onChange={(e) => setEditForm((p) => ({ ...p, quantity: Number(e.target.value) }))}
+                          className="w-full rounded-lg border border-gray-300 px-2 py-1.5 text-center text-sm outline-none focus:border-slate-500"
+                        />
+                      </td>
+                    
+                     <td className="px-2 py-3">
                       <select
                         value={editForm.gender}
                         onChange={(e) => setEditForm((p) => ({ ...p, gender: e.target.value as OrderGender }))}
@@ -520,6 +556,7 @@ export default function OrderDetailsTable({ order, onAddDetail, onUpdateDetail, 
                         {detail.size}
                       </span>
                     </td>
+                    <td className="text-center font-medium">{detail.quantity}</td>
                     <td className="text-center">{detail.gender}</td>
                     <td className="px-4 py-3">{detail.observation}</td>
                     <td>

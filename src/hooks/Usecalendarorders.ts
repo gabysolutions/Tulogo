@@ -14,21 +14,28 @@ export function useCalendarOrders() {
 
   const requestIdRef = useRef(0);
 
-  const fetchOrders = useCallback(async () => {
-    const requestId = ++requestIdRef.current;
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await getOrdersService();
-      if (requestId !== requestIdRef.current) return;
-      setOrders(data.orders);
-    } catch (err) {
-      if (requestId !== requestIdRef.current) return;
-      setError(getErrorMessage(err, "No se pudieron cargar las entregas"));
-    } finally {
-      if (requestId === requestIdRef.current) setLoading(false);
-    }
-  }, []);
+const fetchOrders = useCallback(async () => {
+  const requestId = ++requestIdRef.current;
+  setLoading(true);
+  setError(null);
+  try {
+    const first = await getOrdersService({ page: 1 });
+
+    const rest = await Promise.all(
+      Array.from({ length: Math.max(0, first.pagination.totalPages - 1) }, (_, i) =>
+        getOrdersService({ page: i + 2 })
+      )
+    );
+
+    if (requestId !== requestIdRef.current) return;
+    setOrders([first, ...rest].flatMap((r) => r.orders));
+  } catch (err) {
+    if (requestId !== requestIdRef.current) return;
+    setError(getErrorMessage(err, "No se pudieron cargar las entregas"));
+  } finally {
+    if (requestId === requestIdRef.current) setLoading(false);
+  }
+}, []);
 
   useEffect(() => {
     fetchOrders();

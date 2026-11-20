@@ -24,6 +24,10 @@ export function DesignEventCard({ design, onSelect, variant = "compact" }: Props
 };
   const compact = variant === "compact";
 
+const teams = Array.from(
+  new Set(design.details.map((d) => d.teamName?.trim()).filter(Boolean) as string[])
+);
+
   return (
     <button
       type="button"
@@ -36,19 +40,29 @@ export function DesignEventCard({ design, onSelect, variant = "compact" }: Props
     >
       <span className="absolute top-0 bottom-0 left-0 w-1 bg-violet-400" />
       <div className="flex items-center gap-1.5">
-        <span className={cn("truncate font-semibold text-foreground", compact ? "text-[11px]" : "text-sm")}>
-          {designFolio(design.id)}
-        </span>
-        <span className={cn("rounded-full px-1.5 py-px text-[9px] font-semibold", status.classes)}>
-          {status.label}
-        </span>
-      </div>
-      <p className={cn("truncate text-muted-foreground", compact ? "text-[11px]" : "text-sm")}>
-        {design.designerName || "Sin diseñador"}
-      </p>
-      <p className={cn("truncate text-muted-foreground", compact ? "text-[10px]" : "text-xs")}>
-        {quoteFolio(design.quoteId)} • Diseño
-      </p>
+          <span className={cn("truncate font-semibold text-foreground", compact ? "text-[11px]" : "text-sm")}>
+            {designFolio(design.id)}
+          </span>
+          <span className={cn("rounded-full px-1.5 py-px text-[12px] font-semibold", status.classes)}>
+            {status.label}
+          </span>
+        </div>
+
+        <p className={cn("truncate font-medium text-foreground", compact ? "text-[15px]" : "text-sm")}>
+          {design.clientName || "Sin cliente"}
+        </p>
+
+        {teams.length > 0 && (
+          <p className={cn("truncate text-muted-foreground", compact ? "text-[15px]" : "text-xs")}>
+            Equipo: {teams.join(", ")}
+          </p>
+        )}
+
+       
+
+        <p className={cn("truncate text-muted-foreground", compact ? "text-[10px]" : "text-xs")}>
+          {quoteFolio(design.quoteId)} • Diseño
+        </p>
     </button>
   );
 }

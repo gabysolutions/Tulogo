@@ -5,13 +5,14 @@ import type {
   MessageResponse,
   PublicOrder,
 } from "../types/orderLink";
-
+import type { OrderType } from "../types/order";
 
 
 interface PublicOrderDTO {
   order: {
     id: number;
     client: string;
+     type: OrderType;
     articles: {
       articleId: number;
       article: string;
@@ -36,6 +37,7 @@ export async function getOrderByToken(token: string): Promise<PublicOrder> {
   return {
     id: data.order.id,
     client: data.order.client,
+    type: data.order.type,
     expiresAt: data.expiresIn,
     articles: data.order.articles.map((a) => ({
       articleId: a.articleId,
@@ -43,8 +45,8 @@ export async function getOrderByToken(token: string): Promise<PublicOrder> {
       category: a.category,
       fabricType: a.fabric_type,
       designImg: a.design_img,
-      amount: a.amount,
-      piecesRegistered: a.piecesRegistered,
+      amount: Number(a.amount),
+      piecesRegistered: Number(a.piecesRegistered ?? 0),
     })),
   };
 }

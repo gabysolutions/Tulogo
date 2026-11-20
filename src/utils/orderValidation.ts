@@ -1,17 +1,14 @@
-import type { Order } from "../types/order";
-import { CONFIG_STAGE_ID } from "../types/order";
+import { CONFIG_STAGE_ID, countPieces, type Order } from "../types/order";
 
 export function isConfigComplete(order: Order): boolean {
   if (order.numberPieces <= 0) return true;
-  if (order.details.length < order.numberPieces) return false;
-
+  if (countPieces(order.details) < order.numberPieces) return false;
 
   return order.details.every((d) => Boolean(d.size));
 }
 
-export function missingPiecesCount(order: Order): number {
-  return Math.max(0, order.numberPieces - order.details.length);
-}
+export const missingPiecesCount = (order: Order) =>
+  Math.max(order.numberPieces - countPieces(order.details), 0);
 
 export function canAdvanceStage(order: Order): boolean {
   if (order.status !== CONFIG_STAGE_ID) return true;

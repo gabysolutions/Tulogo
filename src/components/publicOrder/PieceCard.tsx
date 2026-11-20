@@ -6,6 +6,7 @@ export interface PieceErrors {
   size?: string;
   number?: string;
   articleId?: string;
+  quantity?: string;
   gender?: string;
 }
 
@@ -15,6 +16,7 @@ interface Props {
   articles: ArticleOption[];
   sizes: string[];
   genders: readonly GenderOption[];
+  isCustom: boolean;
   errors?: PieceErrors | undefined;
   duplicateWarning?: boolean | undefined;
   onChange: (patch: Partial<DraftPiece>) => void;
@@ -23,85 +25,123 @@ interface Props {
 }
 
 export function PieceCard({
-  index, piece, articles, sizes, genders, errors = {}, duplicateWarning, onChange, onDuplicate, onRemove,
+  index, piece, articles, sizes, genders, isCustom, errors = {}, duplicateWarning, onChange, onDuplicate, onRemove,
 }: Props) {
   const id = (f: string) => `p-${piece.uid}-${f}`;
   const hasError = Object.values(errors).some(Boolean);
+  const itemLabel = isCustom ? "Pieza" : "Talla";
+
+  const sizeField = (
+    <Field
+      label="Talla"
+      htmlFor={id("size")}
+      error={errors.size ?? (piece.sizeFlagged && !piece.size ? "Talla no reconocida" : undefined)}
+      errId={id("size-err")}
+    >
+      <select
+        id={id("size")}
+        className="field"
+        value={piece.size}
+        aria-invalid={!!errors.size}
+        aria-describedby={errors.size || piece.sizeFlagged ? id("size-err") : undefined}
+        onChange={(e) => onChange({ size: e.target.value, sizeFlagged: false })}
+      >
+        <option value="">Elegir…</option>
+        {sizes.map((s) => <option key={s} value={s}>{s}</option>)}
+      </select>
+    </Field>
+  );
+
+  const genderField = (
+    <Field label="Corte" htmlFor={id("gender")} error={errors.gender} errId={id("gender-err")}>
+      <select
+        id={id("gender")}
+        className="field px-2"
+        value={piece.gender}
+        aria-invalid={!!errors.gender}
+        onChange={(e) => onChange({ gender: e.target.value as DetailGender })}
+      >
+        {genders.map((g) => <option key={g.value} value={g.value}>{g.label}</option>)}
+      </select>
+    </Field>
+  );
 
   return (
     <article
       id={`piece-${piece.uid}`}
       className={`rounded-2xl border bg-card p-4 shadow-card transition-colors ${hasError ? "border-destructive" : ""}`}
-      aria-label={`Pieza ${index + 1}`}
+      aria-label={`${itemLabel} ${index + 1}`}
     >
       <header className="mb-3 flex items-center justify-between">
         <span className="font-display text-xl uppercase tracking-wide text-foreground">
-          Pieza <span className="text-primary">{String(index + 1).padStart(2, "0")}</span>
+          {itemLabel} <span className="text-primary">{String(index + 1).padStart(2, "0")}</span>
         </span>
         <div className="flex gap-1">
-          <button type="button" onClick={onDuplicate} className="btn-icon" aria-label={`Duplicar pieza ${index + 1}`}>
+          <button type="button" onClick={onDuplicate} className="btn-icon" aria-label={`Duplicar ${itemLabel.toLowerCase()} ${index + 1}`}>
             <Copy className="h-5 w-5" />
           </button>
-          <button type="button" onClick={onRemove} className="btn-icon hover:text-destructive" aria-label={`Eliminar pieza ${index + 1}`}>
+          <button type="button" onClick={onRemove} className="btn-icon hover:text-destructive" aria-label={`Eliminar ${itemLabel.toLowerCase()} ${index + 1}`}>
             <Trash2 className="h-5 w-5" />
           </button>
         </div>
       </header>
 
-      <div className="grid grid-cols-[1fr_6rem] gap-3">
-        <Field label="Nombre" htmlFor={id("nick")}>
-          <input
-            id={id("nick")}
-            className="field uppercase"
-            value={piece.nickname}
-            maxLength={20}
-            autoCapitalize="characters"
-            placeholder="Ej. PÉREZ"
-            onChange={(e) => onChange({ nickname: e.target.value.toUpperCase().slice(0, 20) })}
-          />
-        </Field>
-        <Field label="Número" htmlFor={id("num")} error={errors.number} errId={id("num-err")}>
-          <input
-            id={id("num")}
-            className="field text-center font-display text-xl"
-            value={piece.number}
-            inputMode="numeric"
-            pattern="[0-9]*"
-            maxLength={3}
-            placeholder="00"
-            aria-invalid={!!errors.number}
-            aria-describedby={errors.number ? id("num-err") : undefined}
-            onChange={(e) => onChange({ number: e.target.value.replace(/\D/g, "").slice(0, 3) })}
-          />
-        </Field>
+      <div className={`grid gap-3 ${isCustom ? "grid-cols-[1fr_6rem]" : "grid-cols-[1fr_7rem]"}`}>
+        {isCustom ? (
+          <>
+            <Field label="Nombre" htmlFor={id("nick")}>
+              <input
+                id={id("nick")}
+                className="field uppercase"
+                value={piece.nickname}
+                maxLength={20}
+                autoCapitalize="characters"
+                placeholder="Ej. PÉREZ"
+                onChange={(e) => onChange({ nickname: e.target.value.toUpperCase().slice(0, 20) })}
+              />
+            </Field>
+            <Field label="Número" htmlFor={id("num")} error={errors.number} errId={id("num-err")}>
+              <input
+                id={id("num")}
+                className="field text-center font-display text-xl"
+                value={piece.number}
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={3}
+                placeholder="00"
+                aria-invalid={!!errors.number}
+                aria-describedby={errors.number ? id("num-err") : undefined}
+                onChange={(e) => onChange({ number: e.target.value.replace(/\D/g, "").slice(0, 3) })}
+              />
+            </Field>
 
-        <Field label="Talla" htmlFor={id("size")} error={errors.size ?? (piece.sizeFlagged && !piece.size ? "Talla no reconocida" : undefined)} errId={id("size-err")}>
-          <select
-            id={id("size")}
-            className="field"
-            value={piece.size}
-            aria-invalid={!!errors.size}
-            aria-describedby={errors.size || piece.sizeFlagged ? id("size-err") : undefined}
-            onChange={(e) => onChange({ size: e.target.value, sizeFlagged: false })}
-          >
-            <option value="">Elegir…</option>
-            {sizes.map((s) => <option key={s} value={s}>{s}</option>)}
-          </select>
-        </Field>
-        <Field label="Corte" htmlFor={id("gender")} error={errors.gender} errId={id("gender-err")}>
-          <select
-            id={id("gender")}
-            className="field px-2"
-            value={piece.gender}
-            aria-invalid={!!errors.gender}
-            onChange={(e) => onChange({ gender: e.target.value as DetailGender })}
-          >
-            {genders.map((g) => <option key={g.value} value={g.value}>{g.label}</option>)}
-          </select>
-        </Field>
+            {sizeField}
+            {genderField}
+          </>
+        ) : (
+          <>
+            {sizeField}
+            <Field label="Cantidad" htmlFor={id("qty")} error={errors.quantity} errId={id("qty-err")}>
+              <input
+                id={id("qty")}
+                type="number"
+                min={1}
+                step={1}
+                inputMode="numeric"
+                className="field text-center font-display text-xl"
+                value={piece.quantity}
+                aria-invalid={!!errors.quantity}
+                aria-describedby={errors.quantity ? id("qty-err") : undefined}
+                onFocus={(e) => e.target.select()}
+                onChange={(e) => onChange({ quantity: Math.max(1, parseInt(e.target.value, 10) || 1) })}
+              />
+            </Field>
 
-       {articles.length > 1 && (() => {
-          
+            <div className="col-span-2">{genderField}</div>
+          </>
+        )}
+
+        {articles.length > 1 && (() => {
           const selectable = articles.filter((a) => a.id === piece.articleId || a.used < a.quota);
 
           return (
@@ -132,21 +172,23 @@ export function PieceCard({
           );
         })()}
 
-        <div className="col-span-2">
-          <Field label="Observación (opcional)" htmlFor={id("obs")}>
-            <input
-              id={id("obs")}
-              className="field"
-              value={piece.observation}
-              maxLength={100}
-              placeholder="Ej. manga larga"
-              onChange={(e) => onChange({ observation: e.target.value.slice(0, 100) })}
-            />
-          </Field>
-        </div>
+        {isCustom && (
+          <div className="col-span-2">
+            <Field label="Observación (opcional)" htmlFor={id("obs")}>
+              <input
+                id={id("obs")}
+                className="field"
+                value={piece.observation}
+                maxLength={100}
+                placeholder="Ej. manga larga"
+                onChange={(e) => onChange({ observation: e.target.value.slice(0, 100) })}
+              />
+            </Field>
+          </div>
+        )}
       </div>
 
-      {duplicateWarning && (
+      {isCustom && duplicateWarning && (
         <p className="mt-3 flex items-center gap-2 rounded-lg bg-warning/15 px-3 py-2 text-sm text-warning-foreground" role="status">
           <AlertTriangle className="h-4 w-4 shrink-0 text-warning" />
           El número {piece.number} se repite en este artículo y corte

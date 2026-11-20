@@ -18,6 +18,7 @@ import type {
   GetProductionOrdersParams,
   ProductionOrderListItemDTO,
   ProductionOrderListItem,
+  UpdateOrderTypePayload,
 } from "../types/order";
 
 
@@ -38,6 +39,7 @@ function mapListItem(dto: OrderListItemDTO): OrderListItem {
     piecesRegistered: dto.pieces_registered,
     deliveryDate: dto.delivery_date,
     priority: dto.priority,
+    type: dto.type,
     status: dto.status,
     quoteId: dto.quoteId,
     clientId: dto.clientId ?? null,
@@ -99,6 +101,7 @@ function mapOrder(dto: OrderByIdDTO): Order {
     piecesRegistered: dto.pieces_registered,
     deliveryDate: dto.delivery_date,
     advanceDate: dto.advance_date,
+    type: dto.type,
     priority: dto.priority,
     status: dto.status,
     quoteId: dto.quoteId,
@@ -112,6 +115,7 @@ function mapOrder(dto: OrderByIdDTO): Order {
       nickname: d.nickname,
       number: d.number,
       size: d.size,
+      quantity:d.quantity,
       gender: d.gender,
       observation: d.observation,
     })),
@@ -129,6 +133,7 @@ function mapOrder(dto: OrderByIdDTO): Order {
       number: d.number,
       size: d.size,
       gender: d.gender,
+      quantity:d.quantity,
       observation: d.observation,
     })),
   };
@@ -262,5 +267,17 @@ export const updateOrderStatusService = async (
 
 export const getOrderPdfService = async (id: number): Promise<Blob> => {
   const { data } = await http.get<Blob>(`/order/${id}/PDF`, { responseType: "blob" });
+  return data;
+};
+
+
+export const updateOrderTypeService = async (
+  orderId: number,
+  payload: UpdateOrderTypePayload
+): Promise<MessageResponse> => {
+  const { data } = await http.patch<MessageResponse>(
+    `/order/${orderId}/type`,
+    payload
+  );
   return data;
 };

@@ -65,7 +65,6 @@ export function OrdersCalendar() {
   const [date, setDate] = useState(new Date());
   const [filters, setFilters] = useState<Filters>(emptyFilters);
 
-  // Las opciones del filtro salen de las órdenes y los diseños reales
   const designers = useMemo(
     () =>
       Array.from(
@@ -105,11 +104,10 @@ export function OrdersCalendar() {
   const designsByDay = useMemo(() => {
     const map = new Map<string, Design[]>();
 
-    // Los diseños no tienen cliente, prioridad ni etapa de producción:
-    // si alguno de esos filtros está activo, no se muestran.
+    
     if (filters.client.trim() || filters.priority !== "all" || filters.stage !== "all") return map;
 
-    // Si la cotización ya tiene orden, se muestra como orden y no como diseño
+   
     const quotesWithOrder = new Set(orders.map((o) => o.quoteId));
     const folio = filters.folio.trim().toLowerCase();
 
@@ -165,7 +163,7 @@ export function OrdersCalendar() {
 
 
 
-  // El detalle de la orden y del diseño viven en su propia ruta
+  
   const handleSelect = (order: OrderListItem) => {
     navigate(`${PRODUCTION_PATH}/${order.id}`);
   };

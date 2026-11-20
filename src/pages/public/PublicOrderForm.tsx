@@ -43,6 +43,7 @@ export default function PublicOrderForm() {
 }
 
 function OrderForm({ token }: { token: string }) {
+  
   const [view, setView] = useState<View>("loading");
   const [linkMessage, setLinkMessage] = useState("");
   const [attempt, setAttempt] = useState(0);
@@ -56,6 +57,8 @@ function OrderForm({ token }: { token: string }) {
   const draftKey = `order-form-draft-${token}`;
   const loaded = useRef(false);
 
+  const isCustom = order?.type !== "sin personalizar";
+   console.log("tipo de orden:", order?.type);
   const blank = useCallback(
     (o: PublicOrder, from?: Partial<DraftPiece>): DraftPiece => ({
       uid: uid(),
@@ -64,6 +67,7 @@ function OrderForm({ token }: { token: string }) {
       number: "",
       size: from?.size ?? "",
       gender: from?.gender ?? DEFAULT_GENDER,
+      quantity: from?.quantity ?? 1,
       observation: "",
     }),
     [],
@@ -80,7 +84,11 @@ function OrderForm({ token }: { token: string }) {
           const raw = localStorage.getItem(draftKey);
           if (raw) restored = JSON.parse(raw);
         } catch { /* ignore */ }
-        setPieces(restored?.length ? restored : [blank(o)]);
+        setPieces(
+          restored?.length
+            ? restored.map((p) => ({ ...p, quantity: p.quantity ?? 1 }))
+            : [blank(o)],
+        );
         loaded.current = true;
         setView("form");
       })
@@ -95,47 +103,80 @@ function OrderForm({ token }: { token: string }) {
     return () => { alive = false; };
   }, [token, draftKey, blank, attempt]);
 
-  
   useEffect(() => {
     if (loaded.current && view === "form") localStorage.setItem(draftKey, JSON.stringify(pieces));
   }, [pieces, draftKey, view]);
 
- 
   const expectedPieces = useMemo(
     () => order?.articles.reduce((sum, a) => sum + Math.max(a.amount - a.piecesRegistered, 0), 0) ?? 0,
     [order],
   );
 
-const articleOptions = useMemo<ArticleOption[]>(() => {
-  if (!order) return [];
-  return order.articles.map((a) => ({
-    id: a.articleId,
-    name: `${a.article} ${a.category}`,
-    quota: Math.max(a.amount - a.piecesRegistered, 0),
-    used: pieces.filter((p) => p.articleId === a.articleId).length,
-  }));
-}, [order, pieces]);
+  
+  const totalPieces = useMemo(
+    () => pieces.reduce((sum, p) => sum + (isCustom ? 1 : p.quantity), 0),
+    [pieces, isCustom],
+  );
 
-const errors = useMemo(() => {
-  const map: Record<string, PieceErrors> = {};
-  if (!order) return map;
-  for (const p of pieces) {
-    const e: PieceErrors = {};
-    if (!p.size) e.size = "La talla es obligatoria";
-    if (p.articleId == null) e.articleId = "Elige un artículo";
-    if (Object.keys(e).length) map[p.uid] = e;
-  }
-  return map;
-}, [pieces, order]);
+  const articleOptions = useMemo<ArticleOption[]>(() => {
+    if (!order) return [];
+    return order.articles.map((a) => ({
+      id: a.articleId,
+      name: `${a.article} ${a.category}`,
+      quota: Math.max(a.amount - a.piecesRegistered, 0),
+      used: pieces
+        .filter((p) => p.articleId === a.articleId)
+        .reduce((sum, p) => sum + (isCustom ? 1 : p.quantity), 0),
+    }));
+  }, [order, pieces, isCustom]);
+
+  const errors = useMemo(() => {
+    const map: Record<string, PieceErrors> = {};
+    if (!order) return map;
+
+    const usedByArticle = new Map<number, number>();
+    for (const p of pieces) {
+      if (p.articleId != null) {
+        usedByArticle.set(
+          p.articleId,
+          (usedByArticle.get(p.articleId) ?? 0) + (isCustom ? 1 : p.quantity),
+        );
+      }
+    }
+
+    for (const p of pieces) {
+      const e: PieceErrors = {};
+      if (!p.size) e.size = "La talla es obligatoria";
+      if (p.articleId == null) e.articleId = "Elige un artículo";
+
+      if (!isCustom) {
+        if (!Number.isInteger(p.quantity) || p.quantity < 1) {
+          e.quantity = "Mínimo 1";
+        } else {
+          const art = order.articles.find((a) => a.articleId === p.articleId);
+          const quota = art ? Math.max(art.amount - art.piecesRegistered, 0) : 0;
+          if (art && (usedByArticle.get(art.articleId) ?? 0) > quota) {
+            e.quantity = `Excede las ${quota} piezas de este artículo`;
+          }
+        }
+      }
+
+      if (Object.keys(e).length) map[p.uid] = e;
+    }
+    return map;
+  }, [pieces, order, isCustom]);
 
   const duplicates = useMemo(() => {
+    if (!isCustom) return new Set<string>();
     const counts = new Map<string, number>();
     const key = (p: DraftPiece) => `${p.articleId}|${p.gender}|${p.number}`;
     pieces.forEach((p) => p.number && counts.set(key(p), (counts.get(key(p)) ?? 0) + 1));
     return new Set(pieces.filter((p) => p.number && (counts.get(key(p)) ?? 0) > 1).map((p) => p.uid));
-  }, [pieces]);
+  }, [pieces, isCustom]);
 
-  const filled = pieces.filter((p) => p.size && p.number).length;
+  const filled = isCustom
+    ? pieces.filter((p) => p.size && p.number).length
+    : pieces.filter((p) => p.size).reduce((sum, p) => sum + p.quantity, 0);
 
   if (view === "loading") return <LoadingSkeleton />;
   if (view === "notfound")
@@ -166,7 +207,7 @@ const errors = useMemo(() => {
   if (view === "success")
     return (
       <StatusMessage variant="success" icon={<CheckCircle2 className="h-9 w-9" />} title="¡Lista enviada!">
-        Recibimos tus {pieces.length} piezas de la <strong className="text-foreground">orden #{order?.id}</strong>. Tu asesor la revisará y te contactará si hay algo que ajustar.
+        Recibimos tus {totalPieces} piezas de la <strong className="text-foreground">orden #{order?.id}</strong>. Tu asesor la revisará y te contactará si hay algo que ajustar.
       </StatusMessage>
     );
 
@@ -191,11 +232,12 @@ const errors = useMemo(() => {
     try {
       const details: OrderDetailItemPayload[] = pieces.map((p) => ({
         articleId: p.articleId as number,
-        nickname: p.nickname.trim().toUpperCase(),
-        number: p.number,
+        nickname: isCustom ? p.nickname.trim().toUpperCase() : "",
+        number: isCustom ? p.number : "",
         size: p.size,
         gender: p.gender,
-        observation: p.observation.trim(),
+        quantity: isCustom ? 1 : p.quantity,
+        observation: isCustom ? p.observation.trim() : "",
       }));
       await addOrderDetails(token, { details });
       localStorage.removeItem(draftKey);
@@ -217,30 +259,34 @@ const errors = useMemo(() => {
       document.getElementById(`piece-${first.uid}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
-    if (pieces.length !== expectedPieces) setConfirmOpen(true);
+    if (totalPieces !== expectedPieces) setConfirmOpen(true);
     else doSubmit();
   };
 
   return (
     <main className="mx-auto max-w-[720px] px-4 pb-32 pt-6 sm:pb-12">
-     <header className="mb-5">
-      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Captura de jugadores</p>
-      <h1 className="mt-1 font-display text-4xl uppercase leading-none tracking-wide text-foreground">
-        Orden #{o.id} · {o.client}
-      </h1>
-      <ExpiryNotice expiresAt={o.expiresAt} />
-    </header>
+      <header className="mb-5">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+          {isCustom ? "Captura de jugadores" : "Captura de tallas"}
+        </p>
+        <h1 className="mt-1 font-display text-4xl uppercase leading-none tracking-wide text-foreground">
+          Orden #{o.id} · {o.client}
+        </h1>
+        <ExpiryNotice expiresAt={o.expiresAt} />
+      </header>
 
       <div className="sticky top-0 z-20 -mx-4 mb-4 border-b bg-background/90 px-4 py-3 backdrop-blur">
         <ProgressBar value={filled} max={expectedPieces} />
       </div>
       <ArticleProgress articles={articleOptions} />
       <div className="mb-4 flex gap-2">
-        <button type="button" className="btn-secondary flex-1" onClick={() => setPasteOpen(true)}>
-          <ClipboardPaste className="h-5 w-5" /> Pegar lista
-        </button>
+        {isCustom && (
+          <button type="button" className="btn-secondary flex-1" onClick={() => setPasteOpen(true)}>
+            <ClipboardPaste className="h-5 w-5" /> Pegar lista
+          </button>
+        )}
         <button type="button" className="btn-secondary flex-1" onClick={() => setPieces((ps) => [...ps, blank(o)])}>
-          <Plus className="h-5 w-5" /> Agregar pieza
+          <Plus className="h-5 w-5" /> {isCustom ? "Agregar pieza" : "Agregar talla"}
         </button>
       </div>
 
@@ -253,6 +299,7 @@ const errors = useMemo(() => {
             articles={articleOptions}
             sizes={PIECE_SIZES}
             genders={GENDER_OPTIONS}
+            isCustom={isCustom}
             errors={showErrors ? errors[p.uid] : undefined}
             duplicateWarning={duplicates.has(p.uid)}
             onChange={(patch) => update(p.uid, patch)}
@@ -262,13 +309,13 @@ const errors = useMemo(() => {
         ))}
         {!pieces.length && (
           <p className="rounded-2xl border border-dashed p-8 text-center text-muted-foreground">
-            Aún no hay piezas. Agrega una o pega tu lista.
+            {isCustom ? "Aún no hay piezas. Agrega una o pega tu lista." : "Aún no hay tallas. Agrega una."}
           </p>
         )}
       </div>
 
       <button type="button" className="btn-dashed mt-3 w-full" onClick={() => setPieces((ps) => [...ps, blank(o)])}>
-        <Plus className="h-5 w-5" /> Agregar pieza
+        <Plus className="h-5 w-5" /> {isCustom ? "Agregar pieza" : "Agregar talla"}
       </button>
 
       {sendError && (
@@ -282,17 +329,19 @@ const errors = useMemo(() => {
           <button type="button" className="btn-primary h-14 w-full text-lg" onClick={onSend} disabled={sending || !pieces.length}>
             {sending
               ? <><Loader2 className="h-5 w-5 animate-spin" /> Enviando…</>
-              : <><Send className="h-5 w-5" /> Enviar {pieces.length} {pieces.length === 1 ? "pieza" : "piezas"}</>}
+              : <><Send className="h-5 w-5" /> Enviar {totalPieces} {totalPieces === 1 ? "pieza" : "piezas"}</>}
           </button>
         </div>
       </div>
 
-      <PasteListModal open={pasteOpen} sizes={PIECE_SIZES} onClose={() => setPasteOpen(false)} onImport={importRows} />
+      {isCustom && (
+        <PasteListModal open={pasteOpen} sizes={PIECE_SIZES} onClose={() => setPasteOpen(false)} onImport={importRows} />
+      )}
 
       <Modal open={confirmOpen} onClose={() => setConfirmOpen(false)} labelledBy="confirm-title">
         <h2 id="confirm-title" className="font-display text-2xl uppercase tracking-wide">¿Enviar de todos modos?</h2>
         <p className="mt-2 text-muted-foreground">
-          Capturaste <strong className="text-foreground">{pieces.length}</strong> piezas y la orden indica{" "}
+          Capturaste <strong className="text-foreground">{totalPieces}</strong> piezas y la orden indica{" "}
           <strong className="text-foreground">{expectedPieces}</strong>. ¿Enviar de todos modos?
         </p>
         <div className="mt-5 flex gap-2">
@@ -303,6 +352,8 @@ const errors = useMemo(() => {
     </main>
   );
 }
+
+
 
 function ExpiryNotice({ expiresAt }: { expiresAt: string }) {
   const [now, setNow] = useState(() => Date.now());

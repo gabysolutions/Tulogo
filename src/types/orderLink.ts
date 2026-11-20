@@ -1,3 +1,4 @@
+import type { OrderType } from "./order";
 export const DETAIL_GENDERS = ["M", "F", "U"] as const;
 export type DetailGender = (typeof DETAIL_GENDERS)[number];
 
@@ -15,6 +16,7 @@ export interface OrderDetailItemPayload {
   number: string; 
   size: string;
   gender: DetailGender;
+  quantity?: number;
   observation: string;
 }
 
@@ -35,6 +37,7 @@ export interface PublicOrderArticle {
 export interface PublicOrder {
   id: number;
   client: string;
+  type: OrderType;
   articles: PublicOrderArticle[];
   expiresAt: string; 
 }
@@ -58,6 +61,7 @@ export interface DraftPiece {
   number: string;
   size: string;
   gender: DetailGender;
+  quantity: number;
   observation: string;
   sizeFlagged?: boolean;
 }

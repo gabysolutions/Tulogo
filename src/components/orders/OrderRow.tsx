@@ -14,7 +14,14 @@ interface Props {
 
 export default function OrderRow({ order, onOpen, onAdvance }: Props) {
   const missing = Math.max(0, order.numberPieces - order.piecesRegistered);
-  const blocked = order.status === CONFIG_STAGE_ID && missing > 0;
+  const withoutSize = order.piecesWithoutSize ?? 0;
+  const incomplete = missing > 0 || withoutSize > 0;
+  const blocked = order.status === CONFIG_STAGE_ID && incomplete;
+
+  const blockedReason =
+    missing > 0
+      ? "Completa la configuración (piezas faltantes) antes de avanzar"
+      : "Hay piezas sin talla, complétalas antes de avanzar";
 
   return (
     <tr
@@ -47,14 +54,20 @@ export default function OrderRow({ order, onOpen, onAdvance }: Props) {
         </div>
 
         {missing > 0 && <p className="text-xs text-red-500">Faltan {missing}</p>}
-        {missing === 0 && <p className="text-xs text-green-600">Completo</p>}
+        {missing === 0 && withoutSize > 0 && (
+          <p className="text-xs text-amber-600">
+            {withoutSize} sin talla
+          </p>
+        )}
+        {missing === 0 && withoutSize === 0 && (
+          <p className="text-xs text-green-600">Completo</p>
+        )}
       </td>
 
       {/* Fecha */}
       <td className="px-4 py-4">{new Date(order.deliveryDate).toLocaleDateString()}</td>
-       
+
       <td className="px-4 py-4">
-        
         <DeliveryAddressInfo sending={order.sending} addressId={order.address} />
       </td>
 
@@ -75,7 +88,7 @@ export default function OrderRow({ order, onOpen, onAdvance }: Props) {
               onClick={() => onAdvance(order)}
               disabled={blocked}
               className="inline-flex items-center gap-1 rounded-lg border px-3 py-2 text-sm hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
-              title={blocked ? "Completa la configuración (piezas faltantes) antes de avanzar" : undefined}
+              title={blocked ? blockedReason : undefined}
             >
               <ArrowRight className="h-4 w-4" />
               Avanzar
