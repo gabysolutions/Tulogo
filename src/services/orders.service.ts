@@ -106,7 +106,7 @@ function mapOrder(dto: OrderByIdDTO): Order {
     priority: dto.priority,
     status: dto.status,
     quoteId: dto.quoteId,
-    addressId: dto.address ?? null,
+    address: dto.address ?? null,
     teamName: dto.teamName ?? null,
      sending: Number(dto.sending ?? 0),
     details: (dto.details ?? []).map((d) => ({

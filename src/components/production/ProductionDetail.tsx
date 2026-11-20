@@ -286,7 +286,7 @@ const OrderDetail = () => {
           status: order.status,
           clientId: order.clientId,
           sending: order.sending,
-          address: order.addressId, 
+          address: order.address, 
         }}
       />
     </main>
