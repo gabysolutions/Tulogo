@@ -111,8 +111,6 @@ export interface OrderListItemDTO {
   client: string;
   phone: string | null;
   designer: string;
-  
-  piecesWithoutSize?: number;
   number_pieces: number;
   pieces_registered: number;
   delivery_date: string;

@@ -13,15 +13,9 @@ interface Props {
 }
 
 export default function OrderRow({ order, onOpen, onAdvance }: Props) {
-  const missing = Math.max(0, order.numberPieces - order.piecesRegistered);
-  const withoutSize = order.piecesWithoutSize ?? 0;
-  const incomplete = missing > 0 || withoutSize > 0;
-  const blocked = order.status === CONFIG_STAGE_ID && incomplete;
+    const missing = Math.max(0, order.numberPieces - order.piecesRegistered);
+  const blocked = order.status === CONFIG_STAGE_ID && missing > 0;
 
-  const blockedReason =
-    missing > 0
-      ? "Completa la configuración (piezas faltantes) antes de avanzar"
-      : "Hay piezas sin talla, complétalas antes de avanzar";
 
   return (
     <tr
@@ -48,21 +42,14 @@ export default function OrderRow({ order, onOpen, onAdvance }: Props) {
       </td>
 
       {/* Piezas */}
-      <td className="px-4 py-4">
-        <div className="font-semibold">
-          {order.piecesRegistered}/{order.numberPieces}
-        </div>
+     <td className="px-4 py-4">
+      <div className="font-semibold">
+        {order.piecesRegistered}/{order.numberPieces}
+      </div>
 
-        {missing > 0 && <p className="text-xs text-red-500">Faltan {missing}</p>}
-        {missing === 0 && withoutSize > 0 && (
-          <p className="text-xs text-amber-600">
-            {withoutSize} sin talla
-          </p>
-        )}
-        {missing === 0 && withoutSize === 0 && (
-          <p className="text-xs text-green-600">Completo</p>
-        )}
-      </td>
+      {missing > 0 && <p className="text-xs text-red-500">Faltan {missing}</p>}
+      {missing === 0 && <p className="text-xs text-green-600">Completo</p>}
+    </td>
 
       {/* Fecha */}
       <td className="px-4 py-4">{new Date(order.deliveryDate).toLocaleDateString()}</td>
@@ -88,7 +75,7 @@ export default function OrderRow({ order, onOpen, onAdvance }: Props) {
               onClick={() => onAdvance(order)}
               disabled={blocked}
               className="inline-flex items-center gap-1 rounded-lg border px-3 py-2 text-sm hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
-              title={blocked ? blockedReason : undefined}
+              title={blocked ? "Completa la configuración (piezas faltantes) antes de avanzar" : undefined}
             >
               <ArrowRight className="h-4 w-4" />
               Avanzar
