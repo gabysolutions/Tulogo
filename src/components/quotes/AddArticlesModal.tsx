@@ -71,11 +71,12 @@ export default function AddArticlesModal({
 
   if (!quote) return null;
 
-  const setQty = (detailId: number, value: number) => {
-    setQtys((prev) => ({ ...prev, [detailId]: Math.max(0, Math.floor(value) || 0) }));
-  };
+  const setQty = (detailId: number, value: number, currentQty: number) => {
+  const n = Math.trunc(value) || 0;
+  setQtys((prev) => ({ ...prev, [detailId]: Math.max(-currentQty, n) }));
+};
 
-  const selected = rows.filter((r) => (qtys[r.detailId] ?? 0) > 0);
+  const selected = rows.filter((r) => (qtys[r.detailId] ?? 0) !== 0);
   const totalAdded = selected.reduce(
     (acc, r) => acc + (qtys[r.detailId] ?? 0) * r.unitPrice,
     0
@@ -143,16 +144,17 @@ export default function AddArticlesModal({
             <div className="space-y-3">
               {rows.map((r) => {
                 const qty = qtys[r.detailId] ?? 0;
-                const unresolved = qty > 0 && (!r.articleId || !r.fabricTypeId);
+                const unresolved = qty !== 0 && (!r.articleId || !r.fabricTypeId);
+                const isNegative = qty < 0;
 
                 return (
                   <div
                     key={r.detailId}
                     className={`rounded-xl border p-4 ${
-                      qty > 0
-                        ? "border-violet-200 bg-violet-50/40"
-                        : "border-slate-200 bg-white"
-                    }`}
+                    qty > 0 ? "border-violet-200 bg-violet-50/40"
+                    : qty < 0 ? "border-red-200 bg-red-50/40"
+                    : "border-slate-200 bg-white"
+                  }`}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
@@ -172,28 +174,28 @@ export default function AddArticlesModal({
                     <div className="mt-3 flex items-end justify-between gap-3">
                       <div>
                         <label className="mb-1 block text-xs font-medium text-slate-500">
-                          Piezas a agregar
+                          Piezas a agregar / quitar
                         </label>
                         <div className="flex items-center gap-1.5">
                           <button
                             type="button"
-                            onClick={() => setQty(r.detailId, qty - 1)}
-                            disabled={qty === 0}
+                            onClick={() => setQty(r.detailId, qty - 1, r.currentQty)}
+                            disabled={r.currentQty + qty <= 0}
                             className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 transition hover:bg-slate-100 disabled:opacity-40"
                           >
                             <Minus className="size-4" />
                           </button>
                           <input
                             className={`${inputCls} w-20 text-center`}
-                            type="number"
-                            min={0}
-                            placeholder="0"
-                            value={qty || ""}
-                            onChange={(e) => setQty(r.detailId, +e.target.value)}
-                          />
+                              type="number"
+                              min={-r.currentQty}
+                              placeholder="0"
+                              value={qty || ""}
+                              onChange={(e) => setQty(r.detailId, +e.target.value, r.currentQty)}
+                             />
                           <button
                             type="button"
-                            onClick={() => setQty(r.detailId, qty + 1)}
+                            onClick={() => setQty(r.detailId, qty + 1, r.currentQty)}
                             className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 transition hover:bg-slate-100"
                           >
                             <Plus className="size-4" />
@@ -202,13 +204,13 @@ export default function AddArticlesModal({
                       </div>
 
                       <div className="text-right text-xs">
-                        {qty > 0 ? (
+                       {qty !== 0 ? (
                           <>
                             <p className="text-slate-500">
                               {r.currentQty} → {r.currentQty + qty} pzas
                             </p>
-                            <p className="text-sm font-semibold text-emerald-600">
-                              + {fmt(qty * r.unitPrice)}
+                            <p className={`text-sm font-semibold ${isNegative ? "text-red-600" : "text-emerald-600"}`}>
+                              {isNegative ? "−" : "+"} {fmt(Math.abs(qty) * r.unitPrice)}
                             </p>
                           </>
                         ) : (
@@ -231,17 +233,13 @@ export default function AddArticlesModal({
           <section className="border-t border-slate-200 pt-5">
             <div className="space-y-2 rounded-lg bg-slate-50 p-4 text-sm">
               <div className="flex justify-between">
-                <span className="text-slate-500">Total actual</span>
-                <span>{fmt(quote.total)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">
-                  Piezas agregadas ({piecesAdded})
-                </span>
-                <span className="font-medium text-emerald-600">
-                  + {fmt(totalAdded)}
-                </span>
-              </div>
+              <span className="text-slate-500">
+                Piezas agregadas/quitadas ({piecesAdded})
+              </span>
+              <span className={`font-medium ${totalAdded < 0 ? "text-red-600" : "text-emerald-600"}`}>
+                {totalAdded < 0 ? "−" : "+"} {fmt(Math.abs(totalAdded))}
+              </span>
+            </div>
               <div className="flex justify-between border-t border-slate-200 pt-2 font-medium">
                 <span>Nuevo total</span>
                 <span>{fmt(newTotal)}</span>

@@ -166,7 +166,7 @@ export interface OrderImageDTO {
 export interface OrderByIdDTO {
   id: number;
   designId: number;
-  clientId?: number;
+  clientId: number;
   client: string;
   phone: string | null;
   designer: string;
@@ -254,8 +254,8 @@ export interface Order {
   type: OrderType;
   status: number;
   quoteId: number;
-  addressId: number | null;
-  teamName?: string | null;
+  address: number | null;
+  teamName: string | null;
   details: OrderDetailItem[];
   images: string[];
   articles: OrderArticle[];

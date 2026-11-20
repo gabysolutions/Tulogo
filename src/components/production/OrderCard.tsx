@@ -7,7 +7,7 @@ import {
   PenTool,
   Package2,
   CalendarDays,
-  AlertTriangle,
+  AlertTriangle,Users,
 } from "lucide-react";
 import type { ProductionOrderListItem } from "../../types/order";
 import { getStage, isCompleted, PRIORITY_META, CONFIG_STAGE_ID } from "../../types/order";
@@ -25,13 +25,23 @@ interface Props {
   onViewHistory: (order: ProductionOrderListItem) => void;
 }
 
-function InfoRow({ icon: Icon, label, value }: { icon: typeof Hash; label: string; value: string }) {
+function InfoRow({
+  icon: Icon,
+  label,
+  value,
+  large = false,
+}: { icon: typeof Hash; label: string; value: string; large?: boolean }) {
   return (
     <div className="flex min-w-0 items-center gap-2">
-      <Icon className="size-3.5 shrink-0 text-slate-400" />
+      <Icon className={`shrink-0 text-slate-400 ${large ? "size-5" : "size-3.5"}`} />
       <div className="flex min-w-0 flex-col leading-tight">
-        <span className="text-[10px] uppercase tracking-wide text-slate-400">{label}</span>
-        <span className="truncate text-xs font-medium text-slate-800">{value}</span>
+        <span className="text-[15px] uppercase tracking-wide text-slate-400">{label}</span>
+        <span
+          title={value}
+          className={`truncate font-medium text-slate-800 ${large ? "text-base font-semibold" : "text-xl"}`}
+        >
+          {value}
+        </span>
       </div>
     </div>
   );
@@ -78,13 +88,18 @@ export function OrderCard({
         </span>
       </div>
 
-      <div className="px-4">
+      <div className="px-7">
         <DesignCarousel images={order.images} alt={`ORD-${order.id}`} />
       </div>
 
-      <div className="grid grid-cols-2 gap-x-3 gap-y-3 p-4">
+        <div className="grid grid-cols-2 gap-x-3 gap-y-3 p-4">
         <InfoRow icon={PenTool} label="Diseñador" value={order.designer} />
         <InfoRow icon={Building2} label="Diseño" value={`DIS-${String(order.designId).padStart(4, "0")}`} />
+        {order.teamName && (
+          <div className="col-span-2 ">
+            <InfoRow icon={Users} label="Equipo" value={order.teamName} />
+          </div>
+        )}
         <InfoRow icon={Package2} label="Piezas" value={`${order.piecesRegistered}/${order.numberPieces} pzs`} />
         <InfoRow icon={CalendarDays} label="Entrega" value={formatDate(order.deliveryDate)} />
       </div>

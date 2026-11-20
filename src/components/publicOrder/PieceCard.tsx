@@ -38,7 +38,7 @@ export function PieceCard({
       error={errors.size ?? (piece.sizeFlagged && !piece.size ? "Talla no reconocida" : undefined)}
       errId={id("size-err")}
     >
-      <select
+      <select  translate="no" 
         id={id("size")}
         className="field"
         value={piece.size}
@@ -47,7 +47,7 @@ export function PieceCard({
         onChange={(e) => onChange({ size: e.target.value, sizeFlagged: false })}
       >
         <option value="">Elegir…</option>
-        {sizes.map((s) => <option key={s} value={s}>{s}</option>)}
+         {sizes.map((s) => <option key={s} value={s} translate="no">{s}</option>)}
       </select>
     </Field>
   );

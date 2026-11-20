@@ -98,8 +98,7 @@ useEffect(() => {
     setSort("delivery");
   }
 
-  // El endpoint recibe el status ACTUAL y el backend avanza la orden.
-  // Devuelve true si se actualizó para que el dialog sepa si cerrarse
+  
   async function handleUpdateStatus(): Promise<boolean> {
     if (!statusOrder) return false;
     try {
