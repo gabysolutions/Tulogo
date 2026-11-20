@@ -121,6 +121,7 @@ export interface OrderListItemDTO {
  clientId: number | null;
   sending: number;
   address: number | null;
+  teamName: string | null;  
 }
 
 export interface OrderCardsDTO {
@@ -178,6 +179,7 @@ export interface OrderByIdDTO {
   status: number;
   quoteId: number;
   address: number | null;
+  teamName: string | null;
   activity?: OrderMovementDTO[];
   details: OrderDetailItemDTO[];
   imgs?: (string | OrderImageDTO| null)[];
@@ -213,6 +215,7 @@ export interface OrderListItem {
   clientId: number | null;
   sending: number;
   address: number | null;
+  teamName: string | null; 
 }
 
 export interface OrderCards {
@@ -252,6 +255,7 @@ export interface Order {
   status: number;
   quoteId: number;
   addressId: number | null;
+  teamName?: string | null;
   details: OrderDetailItem[];
   images: string[];
   articles: OrderArticle[];

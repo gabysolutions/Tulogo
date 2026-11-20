@@ -29,13 +29,18 @@ export default function OrderRow({ order, onOpen, onAdvance }: Props) {
       </td>
 
       {/* Cliente */}
-      <td className="px-4 py-4">
-        <div className="font-medium">{order.client}</div>
-        <div className="mt-1">
-          <PriorityBadge priority={order.priority} />
-        </div>
-      </td>
-
+       <td className="px-4 py-4">
+            <div className="font-medium">{order.client}</div>
+            <div
+              className={`text-xl ${order.teamName ? "text-blue-500" : "italic text-gray-400"}`}
+            >
+              {order.teamName ? `Equipo: ${order.teamName}` : "Sin equipo registrado"}
+            </div>
+            <div className="mt-1">
+              <PriorityBadge priority={order.priority} />
+            </div>
+          </td>
+     
       {/* Diseñador */}
       <td className="px-4 py-4">
         <span className="text-sm text-gray-700">{order.designer}</span>
@@ -74,7 +79,7 @@ export default function OrderRow({ order, onOpen, onAdvance }: Props) {
             <button
               onClick={() => onAdvance(order)}
               disabled={blocked}
-              className="inline-flex items-center gap-1 rounded-lg border px-3 py-2 text-sm hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex items-center gap-1 rounded-lg border px-3 py-2 text-sm hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-40"
               title={blocked ? "Completa la configuración (piezas faltantes) antes de avanzar" : undefined}
             >
               <ArrowRight className="h-4 w-4" />

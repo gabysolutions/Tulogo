@@ -1,5 +1,5 @@
-import type { ButtonHTMLAttributes } from "react";
-import { ArrowDownRight, Plus, Trash } from "lucide-react";
+import { useState, type ButtonHTMLAttributes } from "react";
+import { ArrowDownRight, ChevronLeft, ChevronRight,Plus, Trash } from "lucide-react";
 import type { Expense } from "../../types/finance";
 import { money, shortDate } from "../../utils/format";
 
@@ -47,7 +47,7 @@ function Button({
 }
 
 /* ───────────────────────── ExpensesList ───────────────────────── */
-
+const PAGE_SIZE = 10;
 interface Props {
   expenses: Expense[];
   total: number;
@@ -55,10 +55,19 @@ interface Props {
   onAdd: () => void;
 }
 
+
+
 export function ExpensesList({ expenses, total, onCancel, onAdd }: Props) {
+  const [page, setPage] = useState(1);
+
   const sorted = [...expenses].sort(
     (a, b) => b.registration_date.localeCompare(a.registration_date) || b.id - a.id,
   );
+
+  const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const start = (safePage - 1) * PAGE_SIZE;
+  const paginated = sorted.slice(start, start + PAGE_SIZE);
 
   return (
     <div className="card-elevated p-4 sm:p-5">
@@ -73,7 +82,7 @@ export function ExpensesList({ expenses, total, onCancel, onAdd }: Props) {
       </div>
 
       <ul className="mt-4 divide-y">
-        {sorted.map((e) => {
+        {paginated.map((e) => {
           const active = e.status === 1;
           return (
             <li
@@ -120,6 +129,38 @@ export function ExpensesList({ expenses, total, onCancel, onAdd }: Props) {
           </Button>
         </div>
       )}
+       {sorted.length > PAGE_SIZE && (
+  <div className="mt-4 flex items-center justify-between gap-3 border-t pt-4">
+    <p className="text-xs text-muted-foreground sm:text-sm">
+      {start + 1}–{Math.min(start + PAGE_SIZE, sorted.length)} de {sorted.length}
+    </p>
+
+    <div className="flex items-center gap-2">
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => setPage(safePage - 1)}
+        disabled={safePage === 1}
+      >
+        <ChevronLeft /> Anterior
+      </Button>
+
+      <span className="text-xs text-muted-foreground sm:text-sm">
+        {safePage} / {totalPages}
+      </span>
+
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => setPage(safePage + 1)}
+        disabled={safePage === totalPages}
+      >
+        Siguiente <ChevronRight />
+      </Button>
+    </div>
+  </div>
+)}
+    
     </div>
   );
 }
