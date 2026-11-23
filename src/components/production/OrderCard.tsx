@@ -35,10 +35,10 @@ function InfoRow({
     <div className="flex min-w-0 items-center gap-2">
       <Icon className={`shrink-0 text-slate-400 ${large ? "size-5" : "size-3.5"}`} />
       <div className="flex min-w-0 flex-col leading-tight">
-        <span className="text-[15px] uppercase tracking-wide text-slate-400">{label}</span>
+        <span className="text-[12px] uppercase tracking-wide text-slate-400">{label}</span>
         <span
           title={value}
-          className={`truncate font-medium text-slate-800 ${large ? "text-base font-semibold" : "text-xl"}`}
+          className={`truncate font-medium text-slate-800 ${large ? "text-base font-semibold" : "text-l"}`}
         >
           {value}
         </span>
@@ -77,7 +77,7 @@ export function OrderCard({
             <span className="font-mono text-sm font-semibold text-slate-800">
               ORD-{String(order.id).padStart(4, "0")}
             </span>
-            <span className="rounded-md bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] text-slate-600">
+            <span className="rounded-md bg-slate-100 px-1.5 py-0.5 font-mono text-[14px] text-slate-600">
               {folio}
             </span>
           </div>
@@ -88,11 +88,11 @@ export function OrderCard({
         </span>
       </div>
 
-      <div className="px-7">
+      <div className="px-6">
         <DesignCarousel images={order.images} alt={`ORD-${order.id}`} />
       </div>
 
-        <div className="grid grid-cols-2 gap-x-3 gap-y-3 p-4">
+        <div className="grid grid-cols-2 gap-x-3 gap-y-2 p-3">
         <InfoRow icon={PenTool} label="Diseñador" value={order.designer} />
         <InfoRow icon={Building2} label="Diseño" value={`DIS-${String(order.designId).padStart(4, "0")}`} />
         {order.teamName && (

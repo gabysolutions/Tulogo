@@ -15,7 +15,7 @@ export default function OrderInformation({ order, onChangeType }: Props) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // No hay marcha atrás: una vez "sin personalizar", el select queda bloqueado
+  
   const typeLocked = order.type === ORDER_TYPE.NO_CUSTOM;
 
   const handleSelect = (value: OrderType) => {

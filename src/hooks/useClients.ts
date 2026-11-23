@@ -5,6 +5,8 @@ import {
   createClient as createClientApi,
   updateClient as updateClientApi,
   updateClientTaxInformation as updateClientTaxInformationApi,
+  deleteClient as deleteClientApi,
+  activateClient as activateClientApi,
 } from "../services/client.service";
 import type {
   Client,
@@ -26,6 +28,8 @@ interface UseClientsResult {
   createClient: (payload: ClientPayload, taxInfo?: ClientTaxInformationPayload) => Promise<void>;
   updateClient: (updated: Client) => Promise<void>;
   updateTaxInformation: (clientId: number, payload: ClientTaxInformationPayload) => Promise<void>;
+  removeClient: (id: number) => Promise<void>;
+  reactivateClient: (id: number) => Promise<void>;
 }
 
 export function useClients(): UseClientsResult {
@@ -37,22 +41,22 @@ export function useClients(): UseClientsResult {
   const [page, setPage] = useState(1);
 
   const fetchClients = useCallback(async () => {
-  setLoading(true);
-  setError(null);
-  try {
-    const { clients: list, pagination: p } = await getClients({
-      search: search || undefined,
-      page,
-    });
-    setClients(list);
-    setPagination(p);
- } catch (err) {
-  console.error("Error en getClients:", err);
-  setError(err instanceof Error ? err : new Error("Error al obtener los clientes"));
-} finally {
-    setLoading(false);
-  }
-}, [search, page]);
+    setLoading(true);
+    setError(null);
+    try {
+      const { clients: list, pagination: p } = await getClients({
+        search: search || undefined,
+        page,
+      });
+      setClients(list);
+      setPagination(p);
+    } catch (err) {
+      console.error("Error en getClients:", err);
+      setError(err instanceof Error ? err : new Error("Error al obtener los clientes"));
+    } finally {
+      setLoading(false);
+    }
+  }, [search, page]);
 
   useEffect(() => {
     fetchClients();
@@ -66,7 +70,6 @@ export function useClients(): UseClientsResult {
         try {
           await updateClientTaxInformationApi(id, taxInfo);
         } catch {
-          
           await fetchClients();
           Swal.fire({
             icon: "warning",
@@ -91,7 +94,6 @@ export function useClients(): UseClientsResult {
         phone: updated.phone,
         email: updated.email,
         rfc: updated.rfc,
-        
         registrationDate: updated.registrationDate,
         status: updated.status,
       };
@@ -104,6 +106,22 @@ export function useClients(): UseClientsResult {
   const updateTaxInformation = useCallback(
     async (clientId: number, payload: ClientTaxInformationPayload) => {
       await updateClientTaxInformationApi(clientId, payload);
+      await fetchClients();
+    },
+    [fetchClients]
+  );
+
+  const removeClient = useCallback(
+    async (id: number) => {
+      await deleteClientApi(id);
+      await fetchClients();
+    },
+    [fetchClients]
+  );
+
+  const reactivateClient = useCallback(
+    async (id: number) => {
+      await activateClientApi(id);
       await fetchClients();
     },
     [fetchClients]
@@ -122,5 +140,7 @@ export function useClients(): UseClientsResult {
     createClient,
     updateClient,
     updateTaxInformation,
+    removeClient,
+    reactivateClient,
   };
 }

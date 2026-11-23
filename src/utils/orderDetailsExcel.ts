@@ -6,8 +6,8 @@ import type { AddOrderDetailPayload, OrderSize, OrderGender } from "../types/ord
 const HEADERS = ["Artículo", "Nombre en prenda", "Número", "Talla", "Corte"];
 
 const VALID_SIZES: OrderSize[] = ["2", "3", "4", "6", "8", "10", "12", "14", "16", "XCH", "CH", "M", "G", "XL", "2XL", "3XL", "4XL", "5XL", "6XL"];
-const VALID_GENDERS: OrderGender[] = ["U", "M", "F"];
-const DEFAULT_GENDER: OrderGender = "U";
+const VALID_GENDERS: OrderGender[] = ["Unisex", "Dama", "Caballero"];
+const DEFAULT_GENDER: OrderGender = "Unisex";
 
 const MAX_ROWS = 500;
 
@@ -24,7 +24,7 @@ export async function downloadOrderDetailsTemplate(articles: ArticleListItem[], 
   ];
   ws.getRow(1).font = { bold: true };
 
-  ws.addRow([articles[0]?.description.trim() ?? "", "MESSI", "10", "M", "U"]);
+  ws.addRow([articles[0]?.description.trim() ?? "", "MESSI", "10", "M", "Unisex"]);
 
   const wsCatalog = wb.addWorksheet("Catalogo");
   wsCatalog.getCell("A1").value = "Artículos";
@@ -59,7 +59,7 @@ export async function downloadOrderDetailsTemplate(articles: ArticleListItem[], 
       formulae: [`"${VALID_GENDERS.join(",")}"`],
       showErrorMessage: true,
       errorTitle: "Corte inválido",
-      error: "Usa U (Unisex), M (Masculino) o F (Femenino).",
+      error: "Usa  (Unisex),  (Caballero) o F (Dama).",
     };
   }
 
@@ -129,7 +129,7 @@ export async function parseOrderDetailsFile(file: File, articles: ArticleListIte
     // Corte vacío => Unisex por defecto
     const gender = (genderRaw || DEFAULT_GENDER) as OrderGender;
     if (!VALID_GENDERS.includes(gender)) {
-      errors.push(`Fila ${rowNumber}: corte inválido ("${genderRaw}"). Usa U, M o F.`);
+      errors.push(`Fila ${rowNumber}: corte inválido ("${genderRaw}"). Usa Unisex, Caballero o Dama.`);
       return;
     }
 

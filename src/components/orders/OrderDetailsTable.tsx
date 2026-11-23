@@ -21,14 +21,14 @@ interface Props {
   onAddDetail: (payload: AddOrderDetailPayload) => Promise<unknown>;
   onUpdateDetail: (detailId: number, payload: UpdateOrderDetailPayload) => Promise<unknown>;
   onRemoveDetail: (detailId: number) => Promise<unknown>;
-   onRefresh: () => Promise<unknown> | void;
+  onRefresh: () => Promise<unknown> | void;
 }
 
 const SIZES: OrderSize[] = ["2","3","4","6","8","10","12","14","16","XCH", "CH", "M", "G", "XL","2XL","3XL","4XL","5XL","6XL"];
 const GENDERS: { value: OrderGender; label: string }[] = [
-  { value: "M", label: "Masculino" },
-  { value: "F", label: "Femenino" },
-   { value: "U", label: "Unisex" },
+   { value: "Unisex", label: "Unisex" },
+    { value: "Dama", label: "Dama" },
+     { value: "Caballero", label: "Caballero" },
 ];
 
 const EMPTY_ADD_FORM = {
@@ -36,7 +36,7 @@ const EMPTY_ADD_FORM = {
   nickname: "",
   number: "",
   size: "" as OrderSize | "",
-  gender: "U" as OrderGender,
+  gender: "Unisex" as OrderGender,
   quantity: 1,
   observation: "",
 };
@@ -46,7 +46,7 @@ const EMPTY_EDIT_FORM = {
   nickname: "",
   number: "",
   size: "" as OrderSize | "",
-  gender: "U" as OrderGender,
+  gender: "Unisex" as OrderGender,
   quantity: 1,
   observation: "",
 };
@@ -353,7 +353,7 @@ const complete = missing <= 0;
             onChange={(e) => patchAddForm({ gender: e.target.value as OrderGender })}
             className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
           >
-            <option value="">Corte</option>
+            <option value="">Unisex</option>
             {GENDERS.map((g) => (<option key={g.value} value={g.value}>{g.label}</option>))}
           </select>
 

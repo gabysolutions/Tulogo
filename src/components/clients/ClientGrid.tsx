@@ -6,9 +6,17 @@ interface ClientGridProps {
   clients: Client[];
   onEditClient?: (client: Client) => void;
   onManageAddresses?: (client: Client) => void;
+  onDeleteClient?: (client: Client) => void;
+  onActivateClient?: (client: Client) => void;
 }
 
-export function ClientGrid({ clients, onEditClient, onManageAddresses }: ClientGridProps) {
+export function ClientGrid({
+  clients,
+  onEditClient,
+  onManageAddresses,
+  onDeleteClient,
+  onActivateClient,
+}: ClientGridProps) {
   if (clients.length === 0) {
     return (
       <div className="grid grid-cols-1">
@@ -18,9 +26,16 @@ export function ClientGrid({ clients, onEditClient, onManageAddresses }: ClientG
   }
 
   return (
-    <div className=" grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-4">
       {clients.map((client) => (
-        <ClientCard   key={client.id} client={client} onEdit={onEditClient} onManageAddresses={onManageAddresses}  />
+        <ClientCard
+          key={client.id}
+          client={client}
+          onEdit={onEditClient}
+          onManageAddresses={onManageAddresses}
+          onDelete={onDeleteClient}
+          onActivate={onActivateClient}
+        />
       ))}
     </div>
   );

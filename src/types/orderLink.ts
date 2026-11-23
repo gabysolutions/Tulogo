@@ -1,5 +1,5 @@
 import type { OrderType } from "./order";
-export const DETAIL_GENDERS = ["M", "F", "U"] as const;
+export const DETAIL_GENDERS = ["Dama", "Caballero", "Unisex"] as const;
 export type DetailGender = (typeof DETAIL_GENDERS)[number];
 
 export interface AddOrderLinkResponse {

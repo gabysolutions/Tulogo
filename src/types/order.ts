@@ -84,7 +84,7 @@ export const PRIORITY_META: Record<
 };
 
 export type OrderSize = "2" | "3" | "4" | "6" | "8" | "10" | "12" | "14" | "16" | "XCH" | "CH" | "M"| "G"| "XL"| "2XL"| "3XL"| "4XL"| "5XL"| "6XL";
-export type OrderGender = "M" | "F"| "U";
+export type OrderGender =  "Dama"| "Caballero"| "Unisex";
 
 
 export interface OrderArticleDTO {

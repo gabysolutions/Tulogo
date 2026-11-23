@@ -6,7 +6,7 @@ interface Props {
   order: Order | null;
 }
 
-const GENDER_LABEL: Record<"M" | "F"| "U", string> = { M: "Masculino", F: "Femenino" , U: "Unisex"};
+const GENDER_LABEL: Record<"Dama" | "Caballero"| "Unisex", string> = { Dama: "Dama", Caballero: "Caballero" , Unisex: "Unisex"};
 
 
 export function PrintMoldsDocument({ order }: Props) {

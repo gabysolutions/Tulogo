@@ -29,7 +29,7 @@ interface ClientDTO {
 }
 
 interface ClientListItemDTO {
-id: number;
+  id: number;
   name: string;
   paternal_last_name: string;
   maternal_last_name: string;
@@ -179,6 +179,16 @@ export async function updateClient(id: number, payload: ClientPayload): Promise<
   return data;
 }
 
+export async function deleteClient(id: number): Promise<MessageResponse> {
+  const { data } = await http.delete<MessageResponse>(`/client/${id}`);
+  return data;
+}
+
+export async function activateClient(id: number): Promise<MessageResponse> {
+  const { data } = await http.patch<MessageResponse>(`/client/${id}`);
+  return data;
+}
+
 export async function updateClientTaxInformation(
   clientId: number,
   payload: ClientTaxInformationPayload
@@ -211,3 +221,4 @@ export async function addClientAddress(
   );
   return data;
 }
+
