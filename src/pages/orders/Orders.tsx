@@ -18,6 +18,7 @@ export default function Orders() {
     stage,
     setStage,
     pagination,
+      setPage,
     advanceStage,
   } = useOrders();
 
@@ -49,7 +50,11 @@ export default function Orders() {
         {loading && <p className="text-sm text-slate-400">Cargando pedidos...</p>}
         {error && <p className="text-sm text-red-500">Error al cargar pedidos.</p>}
         {!loading && !error && (
-          <OrdersTable orders={orders} onOpen={handleOpen} onAdvance={requestAdvance} />
+          <OrdersTable orders={orders} onOpen={handleOpen} 
+           onAdvance={requestAdvance}
+            pagination={pagination}   
+            onPageChange={setPage} 
+          />
         )}
       </section>
 

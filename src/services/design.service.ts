@@ -31,6 +31,8 @@ function mapDetail(dto: DesignDetailDTO): DesignDetail {
     category: dto.category,
     teamName: dto.team_name,
     designImg: dto.design_img,
+    fabricType:dto.fabricType,
+    fabric_name:dto.fabric_name,
     printerType: dto.printer_type,
     observations: dto.observations,
     status: dto.status,
@@ -60,7 +62,9 @@ function mapDetailById(dto: DesignDetailByIdDTO): DesignDetailById {
     articleId: dto.articleId,
     description: dto.description,
     category: dto.category,
-    fabricType: dto.fabric_type,
+    fabricType: dto.fabricType,
+    fabricName:dto.fabric_name,
+
     amount: dto.amount,
     teamName: dto.team_name,
     designImg: dto.design_img,
@@ -261,6 +265,7 @@ export const addFileReferenceService = async (
 export interface UpdateDesignDetailPayload {
   teamName?: string;
   printerType?: string;
+  fabricType?:number;
   observations?: string;
 }
 

@@ -45,6 +45,7 @@ import { Lightbox } from "../../components/designs/Lightbox";
 import { StatusBadge } from "../../components/designs/StatusBadge";
 import { DesignDetailModal } from "../../components/designs/DesignDetailModal";
 import { SendDesignToClientButton } from "../../components/designs/Senddesigntoclientbutton";
+import { useFabricTypes } from "../../hooks/useFabricTypes";
 
 const toast = Swal.mixin({
   toast: true,
@@ -67,7 +68,7 @@ function stepProgress(status: DesignStatus, hasProposal: boolean) {
   return 0;
 }
 
-// El backend exige equipo y tipo de impresión en cada detalle para enviar a revisión.
+
 function isDetailComplete(detail: DesignDetailById): boolean {
   return Boolean(detail.teamName?.trim()) && Boolean(detail.printerType?.trim());
 }
@@ -259,6 +260,8 @@ export default function DesignDetailPage() {
 
   const designId = Number(id);
   const { design, loading, error, refetch } = useDesign(designId);
+  const { fabricTypes } = useFabricTypes();
+
 
   const [activeDetailId, setActiveDetailId] = useState<number | undefined>(undefined);
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -308,9 +311,8 @@ export default function DesignDetailPage() {
 
   const references = activeDetail.files.map((f) => f.url);
   const proposal = activeDetail.designImg ? [activeDetail.designImg] : [];
+  
 
-  // Las referencias del cliente son opcionales: solo se exige el detalle completo
-  // y una propuesta vigente (no rechazada) en cada artículo.
   const allDetailsComplete = details.every(isDetailComplete);
   const allHaveProposal = details.every(
     (d) => Boolean(d.designImg) && d.status !== DesignDetailStatus.REJECTED
@@ -422,6 +424,7 @@ export default function DesignDetailPage() {
       await updateDesignDetailService(activeDetail.id, {
         teamName: updatedDetail.teamName ?? undefined,
         printerType: updatedDetail.printerType ?? undefined,
+        fabricType: updatedDetail.fabricType ?? undefined,
         observations: updatedDetail.observations ?? undefined,
       });
       toast.fire({ icon: "success", title: "Detalle actualizado" });
@@ -774,7 +777,8 @@ export default function DesignDetailPage() {
             <Detail label="Artículo" value={activeDetail.description} />
             <Detail label="Categoría" value={activeDetail.category} />
             <Detail label="Nombre del equipo" value={activeDetail.teamName} />
-            <Detail label="Tipo de impresión" value={activeDetail.printerType} />
+            <Detail label="Tipo de impresora" value={activeDetail.printerType} />
+            <Detail label="Tipo de tela" value={activeDetail.fabricName} />
             <div className="col-span-2">
               <dt className="text-[11px] uppercase tracking-wide text-slate-400">Observaciones</dt>
               <dd className="text-sm text-slate-800">{activeDetail.observations || "—"}</dd>
@@ -806,6 +810,7 @@ export default function DesignDetailPage() {
       <DesignDetailModal
         open={detailModalOpen}
         initialDetail={activeDetail}
+         fabricTypes={fabricTypes}
         onClose={() => setDetailModalOpen(false)}
         onSave={handleSaveDetail}
       />

@@ -53,9 +53,10 @@ export interface DesignDetailDTO {
   description: string;
   category: string;
   team_name: string | null;
-
   design_img: string | null;
   printer_type: string | null;
+  fabricType: number | null;
+  fabric_name: string | null;
   observations: string | null;
   status: DesignDetailStatus;
   files: DesignFile[];
@@ -111,6 +112,8 @@ export interface DesignDetail {
   teamName: string | null;
   designImg: string | null;
   printerType: string | null;
+  fabricType: number | null; 
+  fabric_name: string | null;
   observations: string | null;
   status: DesignDetailStatus;
   files: DesignFile[];
@@ -163,7 +166,8 @@ export interface DesignDetailByIdDTO {
   articleId: number;
   description: string;
   category: string;
-  fabric_type: number;
+  fabricType: number | null; 
+  fabric_name: string | null;
   amount: number;
   team_name: string | null;
   design_img: string | null;
@@ -193,7 +197,8 @@ export interface DesignDetailById {
   articleId: number;
   description: string;
   category: string;
-  fabricType: number;
+  fabricType: number | null;
+  fabricName: string | null; 
   amount: number;
   teamName: string | null;
   designImg: string | null;

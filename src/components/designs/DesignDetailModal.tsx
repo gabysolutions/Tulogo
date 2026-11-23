@@ -3,10 +3,12 @@ import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 
 import type { DesignDetailById } from "../../types/design";
+import type { FabricType } from "../../types/inventory";
 
 interface Props {
   open: boolean;
   initialDetail: DesignDetailById;
+  fabricTypes: FabricType[];
   onClose: () => void;
   onSave: (detail: DesignDetailById) => void;
 }
@@ -41,7 +43,7 @@ function Field({
   );
 }
 
-export function DesignDetailModal({ open, initialDetail, onClose, onSave }: Props) {
+export function DesignDetailModal({ open, initialDetail, fabricTypes,  onClose, onSave }: Props) {
   const [detail, setDetail] = useState<DesignDetailById>(initialDetail);
   const [attemptedSave, setAttemptedSave] = useState(false);
 
@@ -139,7 +141,22 @@ export function DesignDetailModal({ open, initialDetail, onClose, onSave }: Prop
               <option value="ROJA">Roja</option>
             </select>
           </Field>
-
+             <Field label="Tipo de tela">
+                    <select
+                      className={inputCls}
+                      value={detail.fabricType ?? ""}
+                      onChange={(e) =>
+                        set("fabricType", e.target.value ? Number(e.target.value) : null)
+                      }
+                    >
+                      <option value="">Seleccionar...</option>
+                      {fabricTypes.map((f) => (
+                        <option key={f.id} value={f.id}>
+                          {f.description}
+                        </option>
+                      ))}
+                    </select>
+                  </Field>  
           <Field label="Observaciones">
             <textarea
               className={`${inputCls} min-h-[100px] resize-y`}
